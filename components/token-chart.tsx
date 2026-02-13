@@ -1,7 +1,13 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { createChart, IChartApi, ISeriesApi } from 'lightweight-charts'
+import {
+  createChart,
+  type AreaData,
+  type IChartApi,
+  type ISeriesApi,
+  type UTCTimestamp,
+} from 'lightweight-charts'
 import { type Database } from '@/lib/supabase'
 
 type Token = Database['public']['Tables']['tokens']['Row']
@@ -88,12 +94,12 @@ export function TokenChart({ token }: TokenChartProps) {
 
 // Generate mock chart data - replace with real data from transactions
 function generateMockChartData() {
-  const data = []
+  const data: AreaData<UTCTimestamp>[] = []
   const now = Math.floor(Date.now() / 1000)
   const basePrice = 0.00000001
 
   for (let i = 0; i < 100; i++) {
-    const time = now - (100 - i) * 3600 // 1 hour intervals
+    const time = (now - (100 - i) * 3600) as UTCTimestamp // 1 hour intervals
     const price = basePrice * (1 + i * 0.01 + Math.random() * 0.02)
     data.push({
       time,

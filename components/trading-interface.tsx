@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { usePrivy } from '@privy-io/react-auth'
 import { type Database } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { BondingCurve } from '@/lib/bonding-curve'
 import { buyTokens, sellTokens } from '@/lib/solana/create-token'
 import { Loader2, ArrowDownUp } from 'lucide-react'
@@ -47,12 +48,49 @@ export function TradingInterface({ token }: TradingInterfaceProps) {
 
     try {
       if (mode === 'buy') {
-        await buyTokens(
+        const buyResult = await buyTokens(
           wallet,
           token.mint_address,
           token.bonding_curve_address,
-          solAmount
+          solAmount,
+          token.current_supply
         )
+
+        // Record transaction with calculated values
+        const { error: txError } = await supabase
+          .from('transactions')
+          .insert({
+            token_id: token.id,
+            wallet_address: publicKey.toBase58(),
+            type: 'buy',
+            sol_amount: solAmount,
+            token_amount: Math.floor(buyResult.tokenAmount),
+            price_per_token: buyResult.pricePerToken,
+            signature: buyResult.signature,
+          })
+
+        if (txError) {
+          console.error('Error recording transaction:', txError)
+        }
+
+        // Calculate and update token state
+        const newSupply = token.current_supply + buyResult.tokenAmount
+        const newSolReserves = BondingCurve.getTotalSolReserves(newSupply)
+        const currentPrice = BondingCurve.getCurrentPrice(newSupply)
+        const newMarketCap = BondingCurve.getMarketCap(newSupply, currentPrice)
+
+        const { error: updateError } = await supabase
+          .from('tokens')
+          .update({
+            current_supply: Math.floor(newSupply),
+            sol_reserves: newSolReserves,
+            market_cap: newMarketCap,
+          })
+          .eq('id', token.id)
+
+        if (updateError) {
+          console.error('Error updating token state:', updateError)
+        }
       } else {
         await sellTokens(
           wallet,
@@ -64,6 +102,7 @@ export function TradingInterface({ token }: TradingInterfaceProps) {
 
       setAmount('')
       // Refresh token data and user balance
+      window.location.reload() // Simple refresh for now
     } catch (err) {
       console.error('Trade error:', err)
       setError(err instanceof Error ? err.message : 'Transaction failed')
@@ -135,7 +174,7 @@ export function TradingInterface({ token }: TradingInterfaceProps) {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">You receive</span>
             <span className="text-white font-medium">
-              {mode === 'buy'
+              {'tokensOut' in quote
                 ? `${quote.tokensOut.toLocaleString()} ${token.symbol}`
                 : `${quote.solOut.toFixed(4)} SOL`}
             </span>

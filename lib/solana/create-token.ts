@@ -6,6 +6,7 @@ import {
   SystemProgram,
   Transaction,
   TransactionInstruction,
+  LAMPORTS_PER_SOL,
 } from '@solana/web3.js'
 import {
   TOKEN_PROGRAM_ID,
@@ -16,7 +17,7 @@ import {
   MINT_SIZE,
   getAssociatedTokenAddress,
 } from '@solana/spl-token'
-import { BondingCurveConfig } from '@/lib/bonding-curve'
+import { BondingCurve, BondingCurveConfig } from '@/lib/bonding-curve'
 
 const connection = new Connection(
   process.env.NEXT_PUBLIC_HELIUS_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL!
@@ -137,6 +138,12 @@ export async function createToken(
   }
 }
 
+export interface BuyTokensResult {
+  signature: string
+  tokenAmount: number
+  pricePerToken: number
+}
+
 /**
  * Buy tokens from bonding curve
  * 
@@ -146,8 +153,9 @@ export async function buyTokens(
   wallet: WalletContextState,
   mintAddress: string,
   bondingCurveAddress: string,
-  solAmount: number
-): Promise<string> {
+  solAmount: number,
+  currentSupply: number = 0
+): Promise<BuyTokensResult> {
   if (!wallet.publicKey || !wallet.signTransaction) {
     throw new Error('Wallet not connected')
   }
@@ -155,6 +163,11 @@ export async function buyTokens(
   try {
     const mint = new PublicKey(mintAddress)
     const bondingCurve = new PublicKey(bondingCurveAddress)
+
+    // Calculate token amounts using bonding curve math
+    const buyCalculation = BondingCurve.calculateBuyAmount(currentSupply, solAmount)
+    const tokenAmount = buyCalculation.tokensOut
+    const pricePerToken = buyCalculation.avgPrice
 
     // Get or create associated token account
     const ata = await getAssociatedTokenAddress(mint, wallet.publicKey)
@@ -174,7 +187,32 @@ export async function buyTokens(
       )
     }
 
-    // In production, add buy instruction
+    // Transfer SOL to bonding curve
+    const solAmountLamports = Math.floor(solAmount * LAMPORTS_PER_SOL)
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: wallet.publicKey,
+        toPubkey: bondingCurve,
+        lamports: solAmountLamports,
+      })
+    )
+
+    // Mint tokens to buyer's ATA
+    // In production, this would be handled by the bonding curve program
+    // For MVP, we mint directly using the bonding curve as mint authority
+    const tokenAmountWithDecimals = Math.floor(tokenAmount * Math.pow(10, 9)) // 9 decimals
+    transaction.add(
+      createMintToInstruction(
+        mint,
+        ata,
+        bondingCurve, // Mint authority
+        tokenAmountWithDecimals,
+        [],
+        TOKEN_PROGRAM_ID
+      )
+    )
+
+    // In production, add buy instruction that handles all of the above
     // transaction.add(
     //   await program.methods
     //     .buy(new BN(solAmount * LAMPORTS_PER_SOL))
@@ -197,7 +235,11 @@ export async function buyTokens(
     const signature = await connection.sendRawTransaction(signed.serialize())
     await connection.confirmTransaction(signature, 'confirmed')
 
-    return signature
+    return {
+      signature,
+      tokenAmount,
+      pricePerToken,
+    }
   } catch (error) {
     console.error('Error buying tokens:', error)
     throw error

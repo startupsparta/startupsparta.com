@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyPrivyAuth } from '@/lib/privy-auth'
 
 /**
+ * JWT standard claims that may be present in Privy tokens
+ */
+interface JWTClaims {
+  sub?: string
+  iat?: number
+  exp?: number
+  [key: string]: unknown
+}
+
+/**
  * API route to verify Privy access tokens
  * POST /api/auth/verify
  * 
@@ -23,14 +33,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Type assertion for JWT standard claims that exist at runtime
+    const claims = authResult.claims as JWTClaims | null
+    
     return NextResponse.json({
       authenticated: true,
       walletAddress: authResult.walletAddress,
       claims: {
         // Only return safe claims, not sensitive data
-        sub: authResult.claims?.sub,
-        iat: authResult.claims?.iat,
-        exp: authResult.claims?.exp,
+        sub: claims?.sub,
+        iat: claims?.iat,
+        exp: claims?.exp,
       },
     })
   } catch (error) {
