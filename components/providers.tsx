@@ -59,7 +59,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         appearance: {
           theme: 'dark',
           accentColor: '#ff5252',
-          logo: '/spartan-icon.png',
+          logo: '/spartan-icon-clear.png',
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
