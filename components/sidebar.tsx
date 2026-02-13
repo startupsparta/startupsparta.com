@@ -26,7 +26,7 @@ export function Sidebar() {
       <Link href="/" className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
           <Image
-            src="/spartan-icon-clear.png"
+            src="/spartan-icon.png"
             alt="StartupSparta"
             width={40}
             height={40}
