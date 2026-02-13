@@ -3,14 +3,14 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { usePrivy } from '@privy-io/react-auth'
+import { useOptionalPrivy } from '@/lib/privy-client'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Home, PlusCircle, TrendingUp, User, LogOut } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { login, logout, authenticated, user } = usePrivy()
+  const { login, logout, authenticated, user } = useOptionalPrivy()
   const { publicKey } = useWallet()
 
   const navItems = [

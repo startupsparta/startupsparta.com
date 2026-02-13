@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { usePrivyToken } from '@/lib/privy-client'
-import { usePrivy } from '@privy-io/react-auth'
+import { useOptionalPrivy, usePrivyToken } from '@/lib/privy-client'
 
 /**
  * Example component showing how to use Privy token verification
@@ -10,7 +9,7 @@ import { usePrivy } from '@privy-io/react-auth'
  */
 export function PrivyAuthExample() {
   const { getAccessToken, authenticated } = usePrivyToken()
-  const { login } = usePrivy()
+  const { login } = useOptionalPrivy()
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

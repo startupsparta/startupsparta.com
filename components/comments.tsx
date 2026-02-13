@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useOptionalPrivy } from '@/lib/privy-client'
 import { supabase, type Database } from '@/lib/supabase'
 import { Send, Loader2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -15,7 +15,7 @@ interface CommentsProps {
 
 export function Comments({ tokenId }: CommentsProps) {
   const { publicKey } = useWallet()
-  const { login, authenticated } = usePrivy()
+  const { login, authenticated } = useOptionalPrivy()
 
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')

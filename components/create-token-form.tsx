@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { createToken, buyTokens } from '@/lib/solana/create-token'
 import { BondingCurve } from '@/lib/bonding-curve'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useOptionalPrivy } from '@/lib/privy-client'
 import { Loader2, X, Plus, Upload, AlertCircle } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import Image from 'next/image'
@@ -23,7 +23,7 @@ type Step = 'form' | 'auth' | 'profile' | 'initial-buy' | 'creating' | 'complete
 export function CreateTokenForm() {
   const router = useRouter()
   const wallet = useWallet()
-  const { login, authenticated } = usePrivy()
+  const { login, authenticated } = useOptionalPrivy()
   
   const [step, setStep] = useState<Step>('form')
   const [loading, setLoading] = useState(false)

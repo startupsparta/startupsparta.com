@@ -14,6 +14,9 @@ require('@solana/wallet-adapter-react-ui/styles.css')
 const queryClient = new QueryClient()
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID
+  const privyEnabled = Boolean(privyAppId)
+
   // Determine network from environment
   const network = (process.env.NEXT_PUBLIC_SOLANA_NETWORK as WalletAdapterNetwork) || WalletAdapterNetwork.Devnet
   
@@ -30,9 +33,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
     [network]
   )
 
+  const appProviders = (
+    <>
+      <QueryClientProvider client={queryClient}>
+        <ConnectionProvider endpoint={endpoint}>
+          <WalletProvider wallets={wallets} autoConnect>
+            <WalletModalProvider>
+              {children}
+            </WalletModalProvider>
+          </WalletProvider>
+        </ConnectionProvider>
+      </QueryClientProvider>
+    </>
+  )
+
+  if (!privyEnabled) {
+    return appProviders
+  }
+
   return (
     <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ''}
+      appId={privyAppId as string}
       config={{
         loginMethods: ['wallet', 'google'],
         appearance: {
@@ -45,15 +66,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       }}
     >
-      <QueryClientProvider client={queryClient}>
-        <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} autoConnect>
-            <WalletModalProvider>
-              {children}
-            </WalletModalProvider>
-          </WalletProvider>
-        </ConnectionProvider>
-      </QueryClientProvider>
+      {appProviders}
     </PrivyProvider>
   )
 }

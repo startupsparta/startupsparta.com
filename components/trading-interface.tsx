@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { usePrivy } from '@privy-io/react-auth'
+import { useOptionalPrivy } from '@/lib/privy-client'
 import { type Database } from '@/lib/supabase'
 import { supabase } from '@/lib/supabase'
 import { BondingCurve } from '@/lib/bonding-curve'
@@ -18,7 +18,7 @@ interface TradingInterfaceProps {
 export function TradingInterface({ token }: TradingInterfaceProps) {
   const { publicKey } = useWallet()
   const wallet = useWallet()
-  const { login, authenticated } = usePrivy()
+  const { login, authenticated } = useOptionalPrivy()
 
   const [mode, setMode] = useState<'buy' | 'sell'>('buy')
   const [amount, setAmount] = useState('')
