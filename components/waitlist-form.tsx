@@ -17,7 +17,7 @@ export function WaitlistForm() {
       // Store email in a waitlist table
       const { error } = await supabase
         .from('waitlist')
-        .insert([{ email, created_at: new Date().toISOString() }])
+        .insert([{ email }])
 
       if (error) {
         if (error.code === '23505') {

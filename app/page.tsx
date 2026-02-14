@@ -47,7 +47,7 @@ export default function HomePage() {
           </div>
 
           <p className="text-sm text-gray-500">
-            Join <span className="text-spartan-gold font-semibold">1000+</span> innovators on the waitlist
+            Be among the first to join the revolution
           </p>
         </div>
       </section>
