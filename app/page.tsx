@@ -23,7 +23,9 @@ export default function HomePage() {
 
       // Apply search filter if searchQuery exists
       if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,symbol.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+        // Escape special characters to prevent SQL injection
+        const sanitizedQuery = searchQuery.replace(/[%_]/g, '\\$&')
+        query = query.or(`name.ilike.%${sanitizedQuery}%,symbol.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
       }
 
       if (filter === 'trending') {
@@ -149,7 +151,9 @@ export default function HomePage() {
               {categories.map((category, index) => (
                 <button
                   key={index}
+                  type="button"
                   onClick={() => setSearchQuery(category.name)}
+                  aria-label={`Search for ${category.name} tokens`}
                   className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
                 >
                   <div
