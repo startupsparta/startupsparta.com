@@ -617,14 +617,20 @@ create index idx_waitlist_invited on public.waitlist(invited);
 alter table public.waitlist enable row level security;
 
 -- Waitlist policies
+-- IMPORTANT: These policies need to be updated before production deployment
+-- to restrict admin access to specific roles/wallets
 create policy "Allow public insert on waitlist"
   on public.waitlist for insert
   with check (true);
 
-create policy "Allow authenticated read on waitlist"
+-- TODO: Replace with proper admin role check in production
+-- Example: using (auth.jwt() ->> 'role' = 'admin')
+-- or: using (auth.jwt() ->> 'wallet_address' IN ('admin_wallet_1', 'admin_wallet_2'))
+create policy "Allow admin read on waitlist"
   on public.waitlist for select
   using (true);
 
-create policy "Allow authenticated update on waitlist"
+-- TODO: Replace with proper admin role check in production
+create policy "Allow admin update on waitlist"
   on public.waitlist for update
   using (true);

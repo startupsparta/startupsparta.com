@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    // Ignore ESLint errors during build for unrelated files
+    // TEMPORARY: Ignore ESLint errors during build for pre-existing issues in other files
+    // TODO: Fix existing linting errors and remove this before production deployment
     ignoreDuringBuilds: true,
   },
   images: {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 import { Loader2, Mail, User, Calendar, Check, X } from 'lucide-react'
 import Link from 'next/link'
@@ -11,8 +11,9 @@ export default function AdminWaitlistPage() {
   const [entries, setEntries] = useState<WaitlistEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'invited'>('all')
+  const [error, setError] = useState<string | null>(null)
 
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     try {
       let query = supabase.from('waitlist').select('*').order('created_at', { ascending: false })
 
@@ -26,17 +27,19 @@ export default function AdminWaitlistPage() {
 
       if (error) throw error
       setEntries(data || [])
+      setError(null)
     } catch (error) {
       console.error('Error loading waitlist:', error)
+      setError('Failed to load waitlist entries')
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter])
 
   useEffect(() => {
+    setLoading(true)
     loadEntries()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter])
+  }, [filter, loadEntries])
 
   const handleInvite = async (id: string) => {
     try {
@@ -51,9 +54,10 @@ export default function AdminWaitlistPage() {
       if (error) throw error
       
       loadEntries()
+      setError(null)
     } catch (error) {
       console.error('Error inviting user:', error)
-      alert('Failed to invite user')
+      setError('Failed to invite user. Please try again.')
     }
   }
 
@@ -116,6 +120,13 @@ export default function AdminWaitlistPage() {
             </button>
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-500">
+            {error}
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-20">

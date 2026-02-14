@@ -27,12 +27,22 @@ export function WaitlistForm() {
           invited_at: null,
         })
 
-      if (dbError) throw dbError
+      if (dbError) {
+        // Check for duplicate email
+        if (dbError.code === '23505' || dbError.message.includes('unique')) {
+          throw new Error('This email is already on the waitlist.')
+        }
+        throw dbError
+      }
 
       setSubmitted(true)
     } catch (err) {
       console.error('Waitlist error:', err)
-      setError('Something went wrong. Please try again.')
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
