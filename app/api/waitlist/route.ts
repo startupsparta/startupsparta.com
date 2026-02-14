@@ -31,7 +31,16 @@ export async function POST(request: NextRequest) {
       .from('waitlist')
       .select('email')
       .eq('email', normalizedEmail)
-      .single()
+      .maybeSingle()
+
+    // Handle actual errors (not "not found")
+    if (checkError) {
+      console.error('Database check error:', checkError)
+      return NextResponse.json(
+        { error: 'Failed to check waitlist. Please try again.' },
+        { status: 500 }
+      )
+    }
 
     if (existing) {
       return NextResponse.json(

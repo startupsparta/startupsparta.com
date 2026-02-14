@@ -22,6 +22,18 @@ create index waitlist_status_idx on public.waitlist(status);
 create index waitlist_created_at_idx on public.waitlist(created_at desc);
 
 -- Updated_at trigger
+-- Note: This requires the handle_updated_at() function from the main schema
+-- If you get an error, make sure you've run the main schema.sql first
+-- Or uncomment and run this function definition:
+/*
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql security definer;
+*/
 create trigger handle_waitlist_updated_at
   before update on public.waitlist
   for each row
