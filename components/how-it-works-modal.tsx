@@ -68,7 +68,7 @@ export function HowItWorksModal() {
             onClick={handleReady}
             className="bg-spartan-gold hover:bg-spartan-gold/90 text-black font-bold py-4 px-12 rounded-lg transition-all duration-200 transform hover:scale-105 border-2 border-spartan-red"
           >
-            I'm ready to launch
+            I&apos;m ready to launch
           </button>
         </div>
 

@@ -13,7 +13,7 @@ export default function TermsAndConditionsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-spartan-gold">1. Acceptance of Terms</h2>
             <p className="mb-4">
-              By accessing and using StartupSparta ("the Platform"), you accept and agree to be bound by these Terms and Conditions. If you do not agree to these terms, you must not use the Platform.
+              By accessing and using StartupSparta (&quot;the Platform&quot;), you accept and agree to be bound by these Terms and Conditions. If you do not agree to these terms, you must not use the Platform.
             </p>
             <p>
               You must be at least 18 years old to use this Platform. By using the Platform, you represent and warrant that you are of legal age to form a binding contract.
@@ -56,7 +56,7 @@ export default function TermsAndConditionsPage() {
                   <li>Engage in market manipulation or fraudulent activities</li>
                   <li>Use the Platform for money laundering or other illegal purposes</li>
                   <li>Impersonate others or provide false information</li>
-                  <li>Interfere with or disrupt the Platform's operation</li>
+                  <li>Interfere with or disrupt the Platform&apos;s operation</li>
                   <li>Attempt to gain unauthorized access to the Platform</li>
                 </ul>
               </div>
@@ -119,7 +119,7 @@ export default function TermsAndConditionsPage() {
               <div>
                 <h3 className="text-xl font-medium mb-2">7.2 As-Is Service</h3>
                 <p>
-                  The Platform is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee that the Platform will be uninterrupted, secure, or error-free.
+                  The Platform is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, either express or implied. We do not guarantee that the Platform will be uninterrupted, secure, or error-free.
                 </p>
               </div>
               <div>
@@ -175,7 +175,7 @@ export default function TermsAndConditionsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-spartan-gold">12. Changes to Terms</h2>
             <p>
-              We reserve the right to modify these Terms at any time. We will notify users of material changes by posting the updated Terms on this page and updating the "Last updated" date. Your continued use of the Platform after changes constitutes acceptance of the new Terms.
+              We reserve the right to modify these Terms at any time. We will notify users of material changes by posting the updated Terms on this page and updating the &quot;Last updated&quot; date. Your continued use of the Platform after changes constitutes acceptance of the new Terms.
             </p>
           </section>
 
