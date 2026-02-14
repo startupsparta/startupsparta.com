@@ -24,7 +24,8 @@ export default function HomePage() {
       // Apply search filter if searchQuery exists
       if (searchQuery) {
         // Escape special characters to prevent SQL injection
-        const sanitizedQuery = searchQuery.replace(/[%_]/g, '\\$&')
+        // First escape backslashes, then escape SQL wildcards
+        const sanitizedQuery = searchQuery.replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&')
         query = query.or(`name.ilike.%${sanitizedQuery}%,symbol.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
       }
 
