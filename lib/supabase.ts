@@ -89,9 +89,20 @@ export type Database = {
           first_purchase_at: string | null
           last_purchase_at: string | null
           updated_at: string
+          percentage: number | null
         }
         Insert: Omit<Database['public']['Tables']['holders']['Row'], 'id' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['holders']['Insert']>
+      }
+      watchlist: {
+        Row: {
+          id: string
+          user_wallet: string
+          token_id: string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['watchlist']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['watchlist']['Insert']>
       }
       comments: {
         Row: {
