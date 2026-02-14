@@ -9,20 +9,31 @@ import { TokenChart } from '@/components/token-chart'
 import { TradingInterface } from '@/components/trading-interface'
 import { HoldersList } from '@/components/holders-list'
 import { Comments } from '@/components/comments'
-import { Loader2, ExternalLink, Globe, Send } from 'lucide-react'
+import { Loader2, ExternalLink, Globe, Send, Award } from 'lucide-react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
+import { AddAchievementModal } from '@/components/add-achievement-modal'
+import { useOptionalPrivy } from '@/lib/privy-client'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 type Token = Database['public']['Tables']['tokens']['Row']
 type Founder = Database['public']['Tables']['founders']['Row']
+type Achievement = Database['public']['Tables']['token_achievements']['Row']
 
 export default function TokenPage() {
   const params = useParams()
   const mintAddress = params.address as string
+  const { authenticated } = useOptionalPrivy()
+  const wallet = useWallet()
 
   const [token, setToken] = useState<Token | null>(null)
   const [founders, setFounders] = useState<Founder[]>([])
+  const [achievements, setAchievements] = useState<Achievement[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAchievementModalOpen, setIsAchievementModalOpen] = useState(false)
+
+  // Check if current user is the token creator
+  const isCreator = token && wallet.publicKey && token.creator_wallet === wallet.publicKey.toBase58()
 
   useEffect(() => {
     loadToken()
@@ -68,6 +79,16 @@ export default function TokenPage() {
         .order('order')
 
       setFounders(foundersData || [])
+
+      // Load verified achievements
+      const { data: achievementsData } = await supabase
+        .from('token_achievements')
+        .select('*')
+        .eq('token_id', tokenData.id)
+        .eq('verified', true)
+        .order('created_at', { ascending: false })
+
+      setAchievements(achievementsData || [])
     } catch (error) {
       console.error('Error loading token:', error)
     } finally {
@@ -217,9 +238,69 @@ export default function TokenPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Achievements */}
+                {(achievements.length > 0 || isCreator) && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Award className="h-5 w-5 text-spartan-gold" />
+                        Achievements
+                      </h3>
+                      {isCreator && authenticated && (
+                        <button
+                          onClick={() => setIsAchievementModalOpen(true)}
+                          className="text-sm text-spartan-gold hover:text-spartan-red transition-colors font-medium"
+                        >
+                          + Add Achievement
+                        </button>
+                      )}
+                    </div>
+                    {achievements.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {achievements.map((achievement) => (
+                          <div
+                            key={achievement.id}
+                            className="bg-spartan-gold/10 border border-spartan-gold rounded-lg px-4 py-2"
+                          >
+                            <div className="flex items-start gap-2">
+                              <span className="text-spartan-gold mt-0.5">✓</span>
+                              <div>
+                                <p className="text-sm font-medium text-white">{achievement.title}</p>
+                                {achievement.amount && (
+                                  <p className="text-xs text-spartan-gold mt-0.5">{achievement.amount}</p>
+                                )}
+                                {achievement.category && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">{achievement.category}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : isCreator ? (
+                      <p className="text-sm text-muted-foreground">
+                        No achievements yet. Add your first achievement to showcase your company's progress.
+                      </p>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Achievement Modal */}
+          {token && (
+            <AddAchievementModal
+              isOpen={isAchievementModalOpen}
+              tokenId={token.id}
+              tokenName={token.name}
+              onClose={() => setIsAchievementModalOpen(false)}
+              onSuccess={() => {
+                loadToken() // Reload to show new achievement (once verified)
+              }}
+            />
+          )}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

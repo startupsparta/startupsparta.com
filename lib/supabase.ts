@@ -43,12 +43,32 @@ export type Database = {
           graduated: boolean
           raydium_pool_address: string | null
           graduation_date: string | null
+          industry: 'B2B' | 'Consumer' | 'Fintech' | 'Healthcare' | 'Education' | 'Industrials' | 'Real Estate and Construction' | 'Government' | 'Unspecified'
           created_at: string
           updated_at: string
           deleted_at: string | null
         }
         Insert: Omit<Database['public']['Tables']['tokens']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['tokens']['Insert']>
+      }
+      token_achievements: {
+        Row: {
+          id: string
+          token_id: string
+          achievement_type: 'funding' | 'partnership' | 'milestone'
+          category: string | null
+          title: string
+          description: string | null
+          amount: string | null
+          verified: boolean
+          verification_method: string | null
+          proof_url: string | null
+          verified_by: string | null
+          created_at: string
+          verified_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['token_achievements']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['token_achievements']['Insert']>
       }
       founders: {
         Row: {
