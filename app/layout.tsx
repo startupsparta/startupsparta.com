@@ -1,12 +1,11 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Providers } from '@/components/providers'
-import { HowItWorksModal } from '@/components/how-it-works-modal'
 import { CookieConsent } from '@/components/cookie-consent'
 
 export const metadata: Metadata = {
-  title: 'StartupSparta - Launch Your Startup Token',
-  description: 'The bonding curve platform for startups. Launch tokens, build community, graduate to Raydium.',
+  title: 'StartupSparta - Join the Waitlist',
+  description: 'Revolutionary bonding curve platform for startups. Be among the first to tokenize equity, build community, and graduate to major exchanges on Solana.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -23,7 +22,6 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="font-sans">
         <Providers>
-          <HowItWorksModal />
           <CookieConsent />
           {children}
         </Providers>
