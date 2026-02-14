@@ -12,13 +12,15 @@ import { useDropzone } from 'react-dropzone'
 import Image from 'next/image'
 import { UserProfileSetupModal } from '@/components/user-profile-setup-modal'
 import { InitialBuyModal } from '@/components/initial-buy-modal'
+import { CompanyVerificationModal, VerificationData } from '@/components/company-verification-modal'
+import { VerificationBadge, VerificationStatus } from '@/components/verification-badge'
 
 interface Founder {
   name: string
   socialUrl: string
 }
 
-type Step = 'form' | 'auth' | 'profile' | 'initial-buy' | 'creating' | 'complete'
+type Step = 'form' | 'auth' | 'profile' | 'verification' | 'initial-buy' | 'creating' | 'complete'
 
 export function CreateTokenForm() {
   const router = useRouter()
@@ -58,6 +60,11 @@ export function CreateTokenForm() {
 
   // Store initial buy amount from modal
   const [initialBuyAmount, setInitialBuyAmount] = useState<number>(0)
+
+  // Verification state
+  const [showVerificationModal, setShowVerificationModal] = useState(false)
+  const [verificationData, setVerificationData] = useState<VerificationData | null>(null)
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('unverified')
 
   // Track wallet address when authenticated
   useEffect(() => {
@@ -371,11 +378,27 @@ export function CreateTokenForm() {
       return
     }
 
-    // Proceed to initial buy modal
-    setStep('initial-buy')
+    // Show verification modal
+    setStep('verification')
+    setShowVerificationModal(true)
   }
 
   const handleProfileComplete = async () => {
+    setStep('verification')
+    setShowVerificationModal(true)
+  }
+
+  const handleVerificationComplete = (data: VerificationData) => {
+    setVerificationData(data)
+    setVerificationStatus(data.verificationStatus)
+    setShowVerificationModal(false)
+    setStep('initial-buy')
+  }
+
+  const handleSkipVerification = () => {
+    setVerificationData(null)
+    setVerificationStatus('unverified')
+    setShowVerificationModal(false)
     setStep('initial-buy')
   }
 
@@ -414,7 +437,7 @@ export function CreateTokenForm() {
         imageUrl: logoUrl,
       })
 
-      // Save to database
+      // Save to database with verification data
       const { data: tokenRecord, error: dbError } = await supabase
         .from('tokens')
         .insert({
@@ -437,6 +460,9 @@ export function CreateTokenForm() {
           sol_reserves: 0,
           market_cap: 0,
           graduated: false,
+          company_domain: verificationData?.domain || null,
+          verification_type: verificationData?.verificationType || 'none',
+          verification_status: verificationStatus,
         })
         .select()
         .single()
@@ -558,7 +584,8 @@ export function CreateTokenForm() {
       // After successful auth, check profile
       checkUserProfile().then((hasProfile) => {
         if (hasProfile) {
-          setStep('initial-buy')
+          setStep('verification')
+          setShowVerificationModal(true)
         } else {
           setStep('profile')
         }
@@ -573,6 +600,21 @@ export function CreateTokenForm() {
           <div className="mb-6 p-4 bg-destructive/10 border border-destructive rounded-lg flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
             <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
+        {/* Verification Status Display */}
+        {verificationData && (
+          <div className="mb-6 p-4 bg-background/50 border border-border rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white mb-1">Company Verification</p>
+                <p className="text-xs text-muted-foreground">
+                  Domain: {verificationData.domain}
+                </p>
+              </div>
+              <VerificationBadge status={verificationStatus} />
+            </div>
           </div>
         )}
 
@@ -935,6 +977,17 @@ export function CreateTokenForm() {
           isOpen={true}
           walletAddress={walletAddress}
           onComplete={handleProfileComplete}
+        />
+      )}
+
+      {/* Company Verification Modal */}
+      {step === 'verification' && (
+        <CompanyVerificationModal
+          isOpen={showVerificationModal}
+          onClose={handleSkipVerification}
+          onVerified={handleVerificationComplete}
+          initialEmail={website ? `contact@${website.replace(/^https?:\/\/(www\.)?/, '')}` : ''}
+          initialDomain={website ? website.replace(/^https?:\/\/(www\.)?/, '') : ''}
         />
       )}
 
