@@ -43,12 +43,34 @@ export type Database = {
           graduated: boolean
           raydium_pool_address: string | null
           graduation_date: string | null
+          company_domain: string | null
+          verification_type: 'none' | 'email' | 'dns'
+          verification_status: 'unverified' | 'email_verified' | 'dns_verified'
           created_at: string
           updated_at: string
           deleted_at: string | null
         }
         Insert: Omit<Database['public']['Tables']['tokens']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['tokens']['Insert']>
+      }
+      company_verifications: {
+        Row: {
+          id: string
+          domain: string
+          verification_type: 'email' | 'dns'
+          verification_status: 'pending' | 'email_verified' | 'dns_verified'
+          verification_code: string | null
+          verification_token: string | null
+          code_expires_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+          attempt_count: number
+          last_attempt_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['company_verifications']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['company_verifications']['Insert']>
       }
       founders: {
         Row: {
