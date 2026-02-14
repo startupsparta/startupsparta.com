@@ -23,7 +23,7 @@ CREATE POLICY "Allow public insert" ON public.waitlist
     FOR INSERT
     WITH CHECK (true);
 
--- Create policy to allow only authenticated users to read (optional - adjust based on requirements)
+-- Create policy to allow public read access
 CREATE POLICY "Allow public read" ON public.waitlist
     FOR SELECT
     USING (true);

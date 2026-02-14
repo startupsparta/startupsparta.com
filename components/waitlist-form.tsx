@@ -70,7 +70,11 @@ export function WaitlistForm() {
       }, 5000)
     } catch (err) {
       console.error('Error submitting to waitlist:', err)
-      setError(err instanceof Error ? err.message : 'Failed to join waitlist. Please try again.')
+      // Provide user-friendly error message while logging details for debugging
+      const errorMessage = err instanceof Error && err.message.includes('fetch')
+        ? 'Unable to connect. Please check your internet connection and try again.'
+        : 'Something went wrong. Please try again or contact support if the problem persists.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
