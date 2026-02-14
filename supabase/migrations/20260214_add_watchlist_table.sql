@@ -28,10 +28,10 @@ CREATE POLICY "Allow public read access on watchlist"
   ON watchlist FOR SELECT
   USING (true);
 
-CREATE POLICY "Allow authenticated insert on watchlist"
+CREATE POLICY "Allow users to insert their own watchlist items"
   ON watchlist FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (user_wallet = current_setting('request.jwt.claims', true)::json->>'wallet_address');
 
 CREATE POLICY "Allow users to delete their own watchlist items"
   ON watchlist FOR DELETE
-  USING (true);
+  USING (user_wallet = current_setting('request.jwt.claims', true)::json->>'wallet_address');

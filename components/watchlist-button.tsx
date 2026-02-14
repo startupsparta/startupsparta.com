@@ -34,9 +34,21 @@ export function WatchlistButton({ tokenId }: WatchlistButtonProps) {
         .eq('token_id', tokenId)
         .single()
 
+      if (error) {
+        // PGRST116 is the error code for "no rows returned" - this is expected
+        if (error.code === 'PGRST116') {
+          setIsWatchlisted(false)
+        } else {
+          // Unexpected error - log it
+          console.error('Error checking watchlist status:', error)
+          setIsWatchlisted(false)
+        }
+        return
+      }
+
       setIsWatchlisted(!!data)
     } catch (error) {
-      // Not in watchlist
+      console.error('Unexpected error checking watchlist:', error)
       setIsWatchlisted(false)
     }
   }

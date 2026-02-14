@@ -11,6 +11,11 @@ interface BubbleMapProps {
   holders: Holder[]
 }
 
+// Layout constants for bubble positioning
+const BUBBLES_PER_ROW = 7
+const X_SPACING = 100
+const Y_SPACING = 120
+
 export function BubbleMap({ holders }: BubbleMapProps) {
   const bubbles = useMemo(() => {
     // Create bubble data with calculated sizes
@@ -40,16 +45,30 @@ export function BubbleMap({ holders }: BubbleMapProps) {
     return `${address.slice(0, 4)}...${address.slice(-4)}`
   }
 
+  const handleKeyDown = (event: React.KeyboardEvent, address: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      // Could add click handler here in the future
+      console.log('Bubble selected:', address)
+    }
+  }
+
   return (
     <div className="relative h-96 bg-black/50 rounded-lg overflow-hidden">
       <svg className="w-full h-full" viewBox="0 0 800 400">
         {bubbles.map((bubble, index) => {
           // Simple circle packing algorithm
-          const x = 100 + (index % 7) * 100
-          const y = 100 + Math.floor(index / 7) * 120
+          const x = 100 + (index % BUBBLES_PER_ROW) * X_SPACING
+          const y = 100 + Math.floor(index / BUBBLES_PER_ROW) * Y_SPACING
           
           return (
-            <g key={bubble.address}>
+            <g 
+              key={bubble.address}
+              tabIndex={0}
+              role="button"
+              aria-label={`Holder ${formatAddress(bubble.address)} with ${bubble.percentage.toFixed(1)}% ownership`}
+              onKeyDown={(e) => handleKeyDown(e, bubble.address)}
+            >
               <circle
                 cx={x}
                 cy={y}

@@ -55,27 +55,41 @@ export function TokenStats({ tokenId, currentPrice }: TokenStatsProps) {
       const oneHourAgo = now - 60 * 60 * 1000
       const sixHoursAgo = now - 6 * 60 * 60 * 1000
 
-      const price5mAgo = transactions.find(tx => 
-        new Date(tx.timestamp).getTime() >= fiveMinAgo
-      )?.price_per_token || currentPrice
+      // Find closest transaction to target time (not just first one after)
+      const findClosestPrice = (targetTime: number) => {
+        let closest = transactions[0]
+        let minDiff = Math.abs(new Date(transactions[0]?.timestamp).getTime() - targetTime)
 
-      const price1hAgo = transactions.find(tx => 
-        new Date(tx.timestamp).getTime() >= oneHourAgo
-      )?.price_per_token || currentPrice
+        for (const tx of transactions) {
+          const txTime = new Date(tx.timestamp).getTime()
+          const diff = Math.abs(txTime - targetTime)
+          if (diff < minDiff) {
+            minDiff = diff
+            closest = tx
+          }
+        }
 
-      const price6hAgo = transactions.find(tx => 
-        new Date(tx.timestamp).getTime() >= sixHoursAgo
-      )?.price_per_token || currentPrice
+        return closest?.price_per_token || currentPrice
+      }
 
+      const price5mAgo = findClosestPrice(fiveMinAgo)
+      const price1hAgo = findClosestPrice(oneHourAgo)
+      const price6hAgo = findClosestPrice(sixHoursAgo)
       const price24hAgo = transactions[0]?.price_per_token || currentPrice
+
+      // Calculate changes with zero-price protection
+      const calculateChange = (oldPrice: number) => {
+        if (oldPrice === 0 || currentPrice === 0) return 0
+        return ((currentPrice - oldPrice) / oldPrice) * 100
+      }
 
       setStats({
         vol24h,
         price: currentPrice,
-        change5m: ((currentPrice - price5mAgo) / price5mAgo) * 100,
-        change1h: ((currentPrice - price1hAgo) / price1hAgo) * 100,
-        change6h: ((currentPrice - price6hAgo) / price6hAgo) * 100,
-        change24h: ((currentPrice - price24hAgo) / price24hAgo) * 100,
+        change5m: calculateChange(price5mAgo),
+        change1h: calculateChange(price1hAgo),
+        change6h: calculateChange(price6hAgo),
+        change24h: calculateChange(price24hAgo),
       })
     } catch (error) {
       console.error('Error calculating stats:', error)

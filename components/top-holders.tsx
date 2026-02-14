@@ -106,10 +106,11 @@ export function TopHolders({ tokenId, totalSupply, bondingCurveAddress }: TopHol
           >
             <div className="flex items-center gap-3">
               <span className="text-muted-foreground text-sm font-mono">
-                {isLiquidityPool(holder.wallet_address)
-                  ? 'Liquidity pool 💧'
-                  : formatAddress(holder.wallet_address)
-                }
+                {isLiquidityPool(holder.wallet_address) ? (
+                  <span aria-label="Liquidity pool">Liquidity pool 💧</span>
+                ) : (
+                  formatAddress(holder.wallet_address)
+                )}
               </span>
             </div>
             <span className="text-white font-bold">
