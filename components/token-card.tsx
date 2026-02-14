@@ -6,6 +6,7 @@ import { type Database } from '@/lib/supabase'
 import { BondingCurve } from '@/lib/bonding-curve'
 import { TrendingUp, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { VerificationIcon, type VerificationStatus } from '@/components/verification-badge'
 
 type Token = Database['public']['Tables']['tokens']['Row']
 
@@ -54,9 +55,14 @@ export function TokenCard({ token }: TokenCardProps) {
 
             {/* Name and symbol */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white truncate group-hover:text-spartan-red transition-colors">
-                {token.name}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white truncate group-hover:text-spartan-red transition-colors">
+                  {token.name}
+                </h3>
+                {token.verification_status && token.verification_status !== 'unverified' && (
+                  <VerificationIcon status={token.verification_status as VerificationStatus} />
+                )}
+              </div>
               <p className="text-sm text-spartan-gold font-mono">${token.symbol}</p>
             </div>
           </div>

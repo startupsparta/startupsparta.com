@@ -12,6 +12,7 @@ import { Comments } from '@/components/comments'
 import { Loader2, ExternalLink, Globe, Send } from 'lucide-react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
+import { VerificationBadge, type VerificationStatus } from '@/components/verification-badge'
 
 type Token = Database['public']['Tables']['tokens']['Row']
 type Founder = Database['public']['Tables']['founders']['Row']
@@ -137,7 +138,12 @@ export default function TokenPage() {
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h1 className="text-4xl font-bold text-white mb-2">{token.name}</h1>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h1 className="text-4xl font-bold text-white">{token.name}</h1>
+                      {token.verification_status && token.verification_status !== 'unverified' && (
+                        <VerificationBadge status={token.verification_status as VerificationStatus} size="lg" />
+                      )}
+                    </div>
                     <p className="text-xl text-spartan-gold font-mono">${token.symbol}</p>
                   </div>
 
