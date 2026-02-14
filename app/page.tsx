@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 import { Sidebar } from '@/components/sidebar'
 import { TokenCard } from '@/components/token-card'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { useOptionalPrivy } from '@/lib/privy-client'
 
 type Token = Database['public']['Tables']['tokens']['Row']
 
@@ -12,6 +14,8 @@ export default function HomePage() {
   const [tokens, setTokens] = useState<Token[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'trending' | 'new' | 'graduated'>('trending')
+  const [searchQuery, setSearchQuery] = useState('')
+  const { login, authenticated } = useOptionalPrivy()
 
   useEffect(() => {
     loadTokens()
@@ -52,12 +56,110 @@ export default function HomePage() {
     }
   }
 
+  const categories = [
+    {
+      name: 'Y-Combinator',
+      bgColor: 'bg-orange-500',
+      logo: 'Y',
+      logoColor: 'text-white',
+    },
+    {
+      name: 'B2B SAAS',
+      bgColor: 'bg-black',
+      logo: 'B2B',
+      logoColor: 'text-white',
+    },
+    {
+      name: 'Sequoia Capital',
+      bgColor: 'bg-white',
+      borderColor: 'border-lime-400',
+      logo: 'SEQUOIA',
+      logoColor: 'text-gray-700',
+    },
+    {
+      name: 'A16z',
+      bgColor: 'bg-red-900',
+      logo: 'A16Z',
+      logoColor: 'text-white',
+    },
+  ]
+
   return (
     <div className="flex min-h-screen bg-black">
       <Sidebar />
       
       <main className="flex-1 ml-64 p-8">
         <div className="max-w-7xl mx-auto">
+          {/* Header with Search and Buttons */}
+          <div className="flex items-center justify-between mb-8 gap-4">
+            {/* Search Bar */}
+            <div className="flex-1 relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Q Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-20 py-3 bg-card border border-border rounded-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-spartan-red"
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-xs text-muted-foreground">
+                <kbd className="px-2 py-1 bg-muted rounded">⌘</kbd>
+                <kbd className="px-2 py-1 bg-muted rounded">K</kbd>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/create"
+                className="bg-spartan-gold hover:bg-spartan-gold/90 text-black font-medium px-6 py-3 rounded-lg transition-colors"
+              >
+                Create coin
+              </Link>
+              {!authenticated && (
+                <button
+                  onClick={login}
+                  className="bg-card hover:bg-muted text-white font-medium px-6 py-3 rounded-lg border border-border transition-colors"
+                >
+                  Log in
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Top Categories Section */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold text-white">Top Categories</h2>
+              <div className="flex items-center gap-2">
+                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-6">
+              {categories.map((category, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  <div
+                    className={`w-full aspect-square rounded-lg flex items-center justify-center text-2xl font-bold mb-3 ${
+                      category.bgColor
+                    } ${category.logoColor} ${
+                      category.borderColor ? `border-4 ${category.borderColor}` : ''
+                    }`}
+                  >
+                    {category.logo}
+                  </div>
+                  <p className="text-white text-sm font-medium">{category.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Filter Buttons */}
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold text-white">
               {filter === 'trending' && 'Trending Startups'}
