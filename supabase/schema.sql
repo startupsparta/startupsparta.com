@@ -615,7 +615,6 @@ create policy "Allow public insert on waitlist"
   on public.waitlist for insert
   with check (true);
 
--- Only allow authenticated admins to read waitlist
-create policy "Allow admin read access on waitlist"
-  on public.waitlist for select
-  using (false); -- Change this later to allow admin access
+-- Note: Admin access to read waitlist data should be implemented separately
+-- through a secure backend service with proper authentication, not through RLS.
+-- For now, all read access is blocked to protect user privacy.

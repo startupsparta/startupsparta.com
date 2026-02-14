@@ -10,7 +10,7 @@ import { useOptionalPrivy } from '@/lib/privy-client'
 
 type Token = Database['public']['Tables']['tokens']['Row']
 
-export default function HomePage() {
+export default function ExplorePage() {
   const [tokens, setTokens] = useState<Token[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'trending' | 'new' | 'graduated'>('trending')
