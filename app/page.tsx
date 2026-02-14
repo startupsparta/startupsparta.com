@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 import { Sidebar } from '@/components/sidebar'
 import { TokenCard } from '@/components/token-card'
-import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { useOptionalPrivy } from '@/lib/privy-client'
 
@@ -56,34 +56,6 @@ export default function HomePage() {
     }
   }
 
-  const categories = [
-    {
-      name: 'Y-Combinator',
-      bgColor: 'bg-orange-500',
-      logo: 'Y',
-      logoColor: 'text-white',
-    },
-    {
-      name: 'B2B SAAS',
-      bgColor: 'bg-black',
-      logo: 'B2B',
-      logoColor: 'text-white',
-    },
-    {
-      name: 'Sequoia Capital',
-      bgColor: 'bg-white',
-      borderColor: 'border-lime-400',
-      logo: 'SEQUOIA',
-      logoColor: 'text-gray-700',
-    },
-    {
-      name: 'A16z',
-      bgColor: 'bg-red-900',
-      logo: 'A16Z',
-      logoColor: 'text-white',
-    },
-  ]
-
   return (
     <div className="flex min-h-screen bg-black">
       <Sidebar />
@@ -124,38 +96,6 @@ export default function HomePage() {
                   Log in
                 </button>
               )}
-            </div>
-          </div>
-
-          {/* Top Categories Section */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-3xl font-bold text-white">Top Categories</h2>
-              <div className="flex items-center gap-2">
-                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-                  <ChevronLeft className="h-5 w-5 text-muted-foreground" />
-                </button>
-                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-6">
-              {categories.map((category, index) => (
-                <div key={index} className="flex flex-col items-center">
-                  <div
-                    className={`w-full aspect-square rounded-lg flex items-center justify-center text-2xl font-bold mb-3 ${
-                      category.bgColor
-                    } ${category.logoColor} ${
-                      category.borderColor ? `border-4 ${category.borderColor}` : ''
-                    }`}
-                  >
-                    {category.logo}
-                  </div>
-                  <p className="text-white text-sm font-medium">{category.name}</p>
-                </div>
-              ))}
             </div>
           </div>
 
