@@ -590,3 +590,31 @@ create policy "Allow users to update their own avatars"
 create policy "Allow users to delete their own avatars"
   on storage.objects for delete
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.jwt() ->> 'wallet_address');
+
+-- ============================================================================
+-- WAITLIST TABLE
+-- ============================================================================
+create table public.waitlist (
+  id uuid default uuid_generate_v4() primary key,
+  email text unique not null,
+  name text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  
+  constraint waitlist_email_format check (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+-- Waitlist indexes
+create index waitlist_email_idx on public.waitlist(email);
+create index waitlist_created_at_idx on public.waitlist(created_at desc);
+
+-- Waitlist RLS
+alter table public.waitlist enable row level security;
+
+-- Allow anyone to insert to waitlist (for public signup)
+create policy "Allow public insert on waitlist"
+  on public.waitlist for insert
+  with check (true);
+
+-- Note: Admin access to read waitlist data should be implemented separately
+-- through a secure backend service with proper authentication, not through RLS.
+-- For now, all read access is blocked to protect user privacy.
