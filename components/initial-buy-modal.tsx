@@ -125,7 +125,7 @@ export function InitialBuyModal({
         {calculation && parseFloat(solAmount) > 0 && (
           <div className="mb-6 p-4 bg-background border border-border rounded-lg space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tokens you'll receive:</span>
+              <span className="text-muted-foreground">Tokens you&apos;ll receive:</span>
               <span className="text-white font-medium">
                 {calculation.tokensOut.toLocaleString(undefined, {
                   maximumFractionDigits: 0,
