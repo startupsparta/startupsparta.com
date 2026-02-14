@@ -7,8 +7,11 @@ import { BondingCurve } from '@/lib/bonding-curve'
 import { Sidebar } from '@/components/sidebar'
 import { TokenChart } from '@/components/token-chart'
 import { TradingInterface } from '@/components/trading-interface'
-import { HoldersList } from '@/components/holders-list'
+import { TopHolders } from '@/components/top-holders'
 import { Comments } from '@/components/comments'
+import { WatchlistButton } from '@/components/watchlist-button'
+import { TokenStats } from '@/components/token-stats'
+import { CopyUrlButton } from '@/components/copy-url-button'
 import { Loader2, ExternalLink, Globe, Send } from 'lucide-react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
@@ -141,11 +144,18 @@ export default function TokenPage() {
                     <p className="text-xl text-spartan-gold font-mono">${token.symbol}</p>
                   </div>
 
-                  {token.graduated && (
-                    <div className="bg-spartan-gold text-black px-4 py-2 rounded-lg font-bold">
-                      GRADUATED TO RAYDIUM
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {token.graduated ? (
+                      <div className="bg-spartan-gold text-black px-4 py-2 rounded-lg font-bold">
+                        GRADUATED TO RAYDIUM
+                      </div>
+                    ) : (
+                      <>
+                        <WatchlistButton tokenId={token.id} />
+                        <CopyUrlButton />
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-muted-foreground mt-4">{token.description}</p>
@@ -264,6 +274,14 @@ export default function TokenPage() {
             </div>
           )}
 
+          {/* Token Stats */}
+          <div className="mb-6">
+            <TokenStats 
+              tokenId={token.id} 
+              currentPrice={currentPrice} 
+            />
+          </div>
+
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Chart and Videos */}
@@ -296,14 +314,20 @@ export default function TokenPage() {
                 </div>
               )}
 
+              {/* Top Holders */}
+              <TopHolders 
+                tokenId={token.id} 
+                totalSupply={token.total_supply} 
+                bondingCurveAddress={token.bonding_curve_address}
+              />
+
               {/* Comments */}
               <Comments tokenId={token.id} />
             </div>
 
-            {/* Right Column - Trading and Holders */}
+            {/* Right Column - Trading */}
             <div className="space-y-6">
               <TradingInterface token={token} />
-              <HoldersList tokenId={token.id} />
             </div>
           </div>
         </div>
