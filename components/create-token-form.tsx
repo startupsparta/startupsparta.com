@@ -34,6 +34,7 @@ export function CreateTokenForm() {
   const [name, setName] = useState('')
   const [symbol, setSymbol] = useState('')
   const [description, setDescription] = useState('')
+  const [industry, setIndustry] = useState<string>('Unspecified')
   
   // Social links
   const [website, setWebsite] = useState('')
@@ -437,6 +438,7 @@ export function CreateTokenForm() {
           sol_reserves: 0,
           market_cap: 0,
           graduated: false,
+          industry: industry,
         })
         .select()
         .single()
@@ -626,6 +628,33 @@ export function CreateTokenForm() {
             required
             disabled={loading || step === 'creating'}
           />
+        </div>
+
+        {/* Industry */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-white mb-2">
+            Industry *
+          </label>
+          <select
+            value={industry}
+            onChange={(e) => setIndustry(e.target.value)}
+            className="w-full bg-background border border-border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-spartan-red"
+            required
+            disabled={loading || step === 'creating'}
+          >
+            <option value="Unspecified">Select Industry</option>
+            <option value="B2B">B2B</option>
+            <option value="Consumer">Consumer</option>
+            <option value="Fintech">Fintech</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Education">Education</option>
+            <option value="Industrials">Industrials</option>
+            <option value="Real Estate and Construction">Real Estate and Construction</option>
+            <option value="Government">Government</option>
+          </select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Choose the industry that best describes your company
+          </p>
         </div>
 
         {/* Social Links */}

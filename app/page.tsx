@@ -15,6 +15,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'trending' | 'new' | 'graduated'>('trending')
   const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [industryFilter, setIndustryFilter] = useState<string | null>(null)
   const { login, authenticated } = useOptionalPrivy()
 
   useEffect(() => {
@@ -31,12 +33,37 @@ export default function HomePage() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [filter])
+  }, [filter, categoryFilter, industryFilter])
 
   const loadTokens = async () => {
     try {
       let query = supabase.from('tokens').select('*')
 
+      // Filter by funding category if selected (via achievements)
+      if (categoryFilter) {
+        const { data: achievementTokenIds } = await supabase
+          .from('token_achievements')
+          .select('token_id')
+          .eq('category', categoryFilter)
+          .eq('verified', true)
+        
+        if (achievementTokenIds && achievementTokenIds.length > 0) {
+          const tokenIds = achievementTokenIds.map(a => a.token_id)
+          query = query.in('id', tokenIds)
+        } else {
+          // No tokens with this achievement
+          setTokens([])
+          setLoading(false)
+          return
+        }
+      }
+
+      // Filter by industry if selected
+      if (industryFilter) {
+        query = query.eq('industry', industryFilter)
+      }
+
+      // Apply sorting
       if (filter === 'trending') {
         query = query.order('market_cap', { ascending: false }).limit(50)
       } else if (filter === 'new') {
@@ -62,12 +89,14 @@ export default function HomePage() {
       bgColor: 'bg-orange-500',
       logo: 'Y',
       logoColor: 'text-white',
+      filterKey: 'Y-Combinator',
     },
     {
       name: 'B2B SAAS',
       bgColor: 'bg-black',
       logo: 'B2B',
       logoColor: 'text-white',
+      filterKey: 'B2B SAAS',
     },
     {
       name: 'Sequoia Capital',
@@ -75,13 +104,27 @@ export default function HomePage() {
       borderColor: 'border-lime-400',
       logo: 'SEQUOIA',
       logoColor: 'text-gray-700',
+      filterKey: 'Sequoia Capital',
     },
     {
       name: 'A16z',
       bgColor: 'bg-red-900',
       logo: 'A16Z',
       logoColor: 'text-white',
+      filterKey: 'A16z',
     },
+  ]
+
+  const industryCategories = [
+    { name: 'All Industries', value: null },
+    { name: 'B2B', value: 'B2B' },
+    { name: 'Consumer', value: 'Consumer' },
+    { name: 'Fintech', value: 'Fintech' },
+    { name: 'Healthcare', value: 'Healthcare' },
+    { name: 'Education', value: 'Education' },
+    { name: 'Industrials', value: 'Industrials' },
+    { name: 'Real Estate', value: 'Real Estate and Construction' },
+    { name: 'Government', value: 'Government' },
   ]
 
   return (
@@ -143,7 +186,16 @@ export default function HomePage() {
             
             <div className="grid grid-cols-4 gap-6">
               {categories.map((category, index) => (
-                <div key={index} className="flex flex-col items-center">
+                <button
+                  key={index}
+                  onClick={() => {
+                    setCategoryFilter(categoryFilter === category.filterKey ? null : category.filterKey)
+                    setIndustryFilter(null) // Clear industry filter
+                  }}
+                  className={`flex flex-col items-center transition-all hover:scale-105 ${
+                    categoryFilter === category.filterKey ? 'ring-2 ring-spartan-gold' : ''
+                  }`}
+                >
                   <div
                     className={`w-full aspect-square rounded-lg flex items-center justify-center text-2xl font-bold mb-3 ${
                       category.bgColor
@@ -154,7 +206,33 @@ export default function HomePage() {
                     {category.logo}
                   </div>
                   <p className="text-white text-sm font-medium">{category.name}</p>
-                </div>
+                  {categoryFilter === category.filterKey && (
+                    <p className="text-spartan-gold text-xs mt-1">Active</p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Industry Filter Section */}
+          <div className="mb-12">
+            <h3 className="text-xl font-bold text-white mb-4">Filter by Industry</h3>
+            <div className="flex flex-wrap gap-2">
+              {industryCategories.map((category) => (
+                <button
+                  key={category.name}
+                  onClick={() => {
+                    setIndustryFilter(category.value)
+                    setCategoryFilter(null) // Clear funding category
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    industryFilter === category.value
+                      ? 'bg-spartan-red text-white'
+                      : 'bg-card border border-border text-muted-foreground hover:text-white hover:border-spartan-gold'
+                  }`}
+                >
+                  {category.name}
+                </button>
               ))}
             </div>
           </div>
