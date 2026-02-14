@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 import { Sidebar } from '@/components/sidebar'
 import { TokenCard } from '@/components/token-card'
@@ -17,25 +17,14 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const { login, authenticated } = useOptionalPrivy()
 
-  useEffect(() => {
-    loadTokens()
-
-    // Subscribe to real-time updates
-    const subscription = supabase
-      .channel('tokens')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tokens' }, () => {
-        loadTokens()
-      })
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [filter])
-
-  const loadTokens = async () => {
+  const loadTokens = useCallback(async () => {
     try {
       let query = supabase.from('tokens').select('*')
+
+      // Apply search filter if searchQuery exists
+      if (searchQuery) {
+        query = query.or(`name.ilike.%${searchQuery}%,symbol.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+      }
 
       if (filter === 'trending') {
         query = query.order('market_cap', { ascending: false }).limit(50)
@@ -54,8 +43,23 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter, searchQuery])
 
+  useEffect(() => {
+    loadTokens()
+
+    // Subscribe to real-time updates
+    const subscription = supabase
+      .channel('tokens')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tokens' }, () => {
+        loadTokens()
+      })
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [loadTokens])
   const categories = [
     {
       name: 'Y-Combinator',
@@ -143,7 +147,11 @@ export default function HomePage() {
             
             <div className="grid grid-cols-4 gap-6">
               {categories.map((category, index) => (
-                <div key={index} className="flex flex-col items-center">
+                <button
+                  key={index}
+                  onClick={() => setSearchQuery(category.name)}
+                  className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
+                >
                   <div
                     className={`w-full aspect-square rounded-lg flex items-center justify-center text-2xl font-bold mb-3 ${
                       category.bgColor
@@ -154,7 +162,7 @@ export default function HomePage() {
                     {category.logo}
                   </div>
                   <p className="text-white text-sm font-medium">{category.name}</p>
-                </div>
+                </button>
               ))}
             </div>
           </div>
