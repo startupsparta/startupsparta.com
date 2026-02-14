@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 import { Sidebar } from '@/components/sidebar'
 import { TokenCard } from '@/components/token-card'
+import { WaitlistForm } from '@/components/waitlist-form'
 import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useOptionalPrivy } from '@/lib/privy-client'
@@ -157,6 +158,11 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Waitlist Section */}
+          <div className="mb-12">
+            <WaitlistForm />
           </div>
 
           {/* Filter Buttons */}
