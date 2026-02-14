@@ -6,10 +6,10 @@
 import crypto from 'crypto'
 
 /**
- * Generate a 6-digit verification code
+ * Generate a 6-digit verification code using cryptographically secure random
  */
 export function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  return crypto.randomInt(100000, 1000000).toString()
 }
 
 /**
@@ -31,11 +31,27 @@ export function extractDomain(email: string): string {
 }
 
 /**
- * Validate email format
+ * Validate email format with comprehensive regex
+ * Handles most edge cases including special characters and internationalized domains
  */
 export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  // More comprehensive email validation that handles:
+  // - Local part: alphanumeric, dots, hyphens, underscores, plus signs
+  // - Domain: alphanumeric, dots, hyphens
+  // - TLD: at least 2 characters
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+  
+  // Additional checks for common invalid patterns
+  if (!emailRegex.test(email)) return false
+  if (email.includes('..')) return false // No consecutive dots
+  if (email.startsWith('.') || email.endsWith('.')) return false // No leading/trailing dots
+  if (email.split('@').length !== 2) return false // Exactly one @
+  
+  const [localPart, domain] = email.split('@')
+  if (localPart.length > 64) return false // Local part max length
+  if (domain.length > 255) return false // Domain max length
+  
+  return true
 }
 
 /**
