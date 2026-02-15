@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useOptionalPrivy } from '@/lib/privy-client'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { Home, PlusCircle, TrendingUp, User, LogOut } from 'lucide-react'
+import { Home, PlusCircle, TrendingUp, User, LogOut, Rocket } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -14,9 +14,10 @@ export function Sidebar() {
   const { publicKey } = useWallet()
 
   const navItems = [
-    { name: 'Home', href: '/', icon: Home },
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Create Token', href: '/create', icon: PlusCircle },
-    { name: 'Trending', href: '/?filter=trending', icon: TrendingUp },
+    { name: 'Trending', href: '/dashboard?filter=trending', icon: TrendingUp },
+    { name: 'Waitlist', href: '/waitlist', icon: Rocket },
     { name: 'Profile', href: '/profile', icon: User },
   ]
 

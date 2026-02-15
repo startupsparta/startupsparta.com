@@ -764,7 +764,7 @@ export function CreateTokenForm() {
                   Drag and drop your video, or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Video - max 30MB. '.mp4' recommended
+                  Video - max 30MB. &apos;.mp4&apos; recommended
                   <br />
                   Video - 16:9 or 9:16, 1080p+ recommended
                 </p>
@@ -799,7 +799,7 @@ export function CreateTokenForm() {
                   Drag and drop your video, or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Video - max 30MB. '.mp4' recommended
+                  Video - max 30MB. &apos;.mp4&apos; recommended
                   <br />
                   Video - 16:9 or 9:16, 1080p+ recommended
                 </p>
@@ -839,7 +839,7 @@ export function CreateTokenForm() {
                   Drag and drop your logo, or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Image - max 15MB. '.jpg', '.gif' or '.png' recommended
+                  Image - max 15MB. &apos;.jpg&apos;, &apos;.gif&apos; or &apos;.png&apos; recommended
                   <br />
                   Image - min. 1000x1000px, 1:1 square recommended
                 </p>
@@ -882,7 +882,7 @@ export function CreateTokenForm() {
                   Drag and drop your banner, or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Image - max 4.3MB. '.jpg', '.gif' or '.png' recommended
+                  Image - max 4.3MB. &apos;.jpg&apos;, &apos;.gif&apos; or &apos;.png&apos; recommended
                   <br />
                   3:1 aspect ratio, 1500x500px recommended
                 </p>
