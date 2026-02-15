@@ -5,7 +5,7 @@
   "framework": "nextjs",
   "redirects": [
     {
-      "source": "https://startupsparta.com/:path*",
+      "source": "https://startupsparta.com",
       "destination": "https://www.startupsparta.com/waitlist",
       "permanent": true
     }

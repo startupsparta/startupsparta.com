@@ -20,11 +20,10 @@ CREATE INDEX IF NOT EXISTS idx_waitlist_name ON waitlist(name);
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
--- Allow public read access (if needed for admin dashboards later)
+-- Allow public insert on waitlist (anyone can sign up)
 CREATE POLICY "Allow public insert on waitlist"
   ON waitlist FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated read on waitlist"
-  ON waitlist FOR SELECT
-  USING (true);
+-- Note: For admin access, create a separate admin role and policy
+-- No public read access - waitlist data is private

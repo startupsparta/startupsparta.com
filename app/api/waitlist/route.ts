@@ -58,6 +58,16 @@ export async function POST(request: NextRequest) {
       .eq('email', normalizedEmail)
       .single()
 
+    // Handle database errors (not 'not found' errors)
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Waitlist check error:', checkError)
+      return NextResponse.json(
+        { error: 'Failed to check waitlist. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    // If user exists, return conflict error
     if (existingUser) {
       return NextResponse.json(
         { error: 'This email is already on the waitlist' },
