@@ -14,9 +14,9 @@ export function Sidebar() {
   const { publicKey } = useWallet()
 
   const navItems = [
-    { name: 'Home', href: '/', icon: Home },
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Create Token', href: '/create', icon: PlusCircle },
-    { name: 'Trending', href: '/?filter=trending', icon: TrendingUp },
+    { name: 'Trending', href: '/dashboard?filter=trending', icon: TrendingUp },
     { name: 'Waitlist', href: '/waitlist', icon: Rocket },
     { name: 'Profile', href: '/profile', icon: User },
   ]
