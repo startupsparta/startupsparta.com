@@ -2,7 +2,25 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/:path((?!waitlist|_next|api/waitlist|favicon.ico|spartan-icon|apple-touch-icon|android-chrome|favicon-16x16|favicon-32x32|site.webmanifest).*)",
+      "destination": "/waitlist",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/waitlist",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
+  ]
 }
 
 
