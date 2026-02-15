@@ -12,8 +12,9 @@ interface WaitlistResponse {
   error?: string
 }
 
-// Email validation regex
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Email validation - more robust pattern
+// This pattern validates most common email formats while preventing obvious issues
+const EMAIL_REGEX = /^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/
 
 export async function POST(request: NextRequest) {
   try {

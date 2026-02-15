@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS waitlist (
 );
 
 -- Add indexes for performance
-CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(email);
+-- Note: email already has unique constraint which creates an index automatically
 CREATE INDEX IF NOT EXISTS idx_waitlist_created_at ON waitlist(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_waitlist_name ON waitlist(name);
 

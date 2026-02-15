@@ -17,12 +17,7 @@ const nextConfig = {
     };
     return config;
   },
-  // Skip static generation for non-waitlist pages since they're all blocked by middleware
-  // This prevents build errors from pages that won't be accessible anyway
   skipTrailingSlashRedirect: true,
-  experimental: {
-    // Skip rendering pages that will be redirected anyway
-  },
 }
 
 module.exports = nextConfig

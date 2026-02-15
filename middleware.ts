@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect non-www to www for startupsparta.com domain
-  if (host === 'startupsparta.com' && !host.startsWith('www.')) {
+  if (host === 'startupsparta.com') {
     return NextResponse.redirect(`https://www.${host}/waitlist`, 308)
   }
 

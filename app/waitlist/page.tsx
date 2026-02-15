@@ -3,6 +3,9 @@
 import { useState, FormEvent } from 'react'
 import Image from 'next/image'
 
+// Configuration
+const WAITLIST_COUNT_DISPLAY = '1,000+' // Update this as the waitlist grows
+
 export default function WaitlistPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -157,7 +160,7 @@ export default function WaitlistPage() {
         {/* Social Proof (Optional) */}
         <div className="mt-12 text-center">
           <p className="text-gray-500 text-sm">
-            Join 1,000+ founders waiting to launch
+            Join {WAITLIST_COUNT_DISPLAY} founders waiting to launch
           </p>
         </div>
       </div>
