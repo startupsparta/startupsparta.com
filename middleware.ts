@@ -20,11 +20,12 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect non-www to www
+  // Using 308 (permanent) since domain should always use www
   if (host === 'startupsparta.com') {
     const url = new URL(request.url)
     url.host = 'www.startupsparta.com'
     url.pathname = '/waitlist'
-    return NextResponse.redirect(url, 308) // Permanent redirect
+    return NextResponse.redirect(url, 308)
   }
 
   // Allow access to /waitlist
@@ -33,13 +34,14 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect root to /waitlist
+  // Using 307 (temporary) since this is a temporary landing page during waitlist phase
   if (pathname === '/') {
     const url = new URL('/waitlist', origin)
-    return NextResponse.redirect(url, 307) // Temporary redirect
+    return NextResponse.redirect(url, 307)
   }
 
   // Block all other routes - redirect to waitlist
-  // This includes /create, /token/*, etc.
+  // Using 307 (temporary) since access will be restored after launch
   const url = new URL('/waitlist', origin)
   return NextResponse.redirect(url, 307)
 }

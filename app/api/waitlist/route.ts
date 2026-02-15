@@ -51,31 +51,8 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase()
     const trimmedName = name.trim()
 
-    // Check if email already exists
-    const { data: existingUser, error: checkError } = await supabase
-      .from('waitlist')
-      .select('email')
-      .eq('email', normalizedEmail)
-      .single()
-
-    // Handle database errors (not 'not found' errors)
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Waitlist check error:', checkError)
-      return NextResponse.json(
-        { error: 'Failed to check waitlist. Please try again.' },
-        { status: 500 }
-      )
-    }
-
-    // If user exists, return conflict error
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'This email is already on the waitlist' },
-        { status: 409 }
-      )
-    }
-
     // Insert into waitlist
+    // The database has a UNIQUE constraint on email which will prevent duplicates
     const { data, error } = await supabase
       .from('waitlist')
       .insert({
@@ -89,7 +66,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Waitlist insert error:', error)
       
-      // Handle duplicate email constraint
+      // Handle duplicate email constraint (23505 is PostgreSQL unique violation)
       if (error.code === '23505') {
         return NextResponse.json(
           { error: 'This email is already on the waitlist' },

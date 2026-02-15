@@ -2,14 +2,7 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "redirects": [
-    {
-      "source": "https://startupsparta.com",
-      "destination": "https://www.startupsparta.com/waitlist",
-      "permanent": true
-    }
-  ]
+  "framework": "nextjs"
 }
 
 
