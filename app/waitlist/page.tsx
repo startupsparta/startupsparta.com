@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
-import Link from 'next/link'
-import { ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react'
+import { Check, Loader2, Sparkles } from 'lucide-react'
 
 export default function WaitlistPage() {
   const [formData, setFormData] = useState({
@@ -136,11 +135,7 @@ export default function WaitlistPage() {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-white hover:text-spartan-gold transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Back to Home</span>
-          </Link>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center">
           <motion.div
             className="flex items-center gap-2"
             initial={{ opacity: 0 }}
@@ -148,7 +143,7 @@ export default function WaitlistPage() {
             transition={{ delay: 0.3 }}
           >
             <Sparkles className="h-5 w-5 text-spartan-gold" />
-            <span className="text-sm font-medium">StartupSparta</span>
+            <span className="text-xl font-bold">StartupSparta</span>
           </motion.div>
         </div>
       </motion.header>
@@ -168,7 +163,7 @@ export default function WaitlistPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-spartan-gold to-spartan-red bg-clip-text text-transparent">
-                Join the Waitlist
+                The Future of Startup Tokens
               </h1>
             </motion.div>
             
@@ -178,7 +173,7 @@ export default function WaitlistPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Be part of the revolution in startup funding. Get early access to the platform that connects innovative startups with forward-thinking investors.
+              Join the revolution. Be first to launch on StartupSparta.
             </motion.p>
 
             <motion.div
