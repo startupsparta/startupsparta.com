@@ -15,6 +15,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
             const comment = `## 🚀 Preview Deployment
             
             Your preview deployment is being built by Vercel. 
@@ -32,8 +33,8 @@ jobs:
             4. Test your changes
             
             ### Need help?
-            - 📘 [Preview Deployment Guide](https://github.com/startupsparta/startupsparta.com/blob/main/PREVIEW_DEPLOYMENT_GUIDE.md)
-            - 🚀 [Quick Start Guide](https://github.com/startupsparta/startupsparta.com/blob/main/QUICKSTART.md)
+            - 📘 [Preview Deployment Guide](${repoUrl}/blob/main/PREVIEW_DEPLOYMENT_GUIDE.md)
+            - 🚀 [Quick Start Guide](${repoUrl}/blob/main/QUICKSTART.md)
             
             ---
             *This is an informational message. Actual deployment is handled by Vercel.*`;
