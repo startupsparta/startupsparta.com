@@ -590,3 +590,47 @@ create policy "Allow users to update their own avatars"
 create policy "Allow users to delete their own avatars"
   on storage.objects for delete
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.jwt() ->> 'wallet_address');
+
+-- ============================================================================
+-- WAITLIST TABLE
+-- ============================================================================
+create table public.waitlist (
+  id uuid default uuid_generate_v4() primary key,
+  email text unique not null,
+  name text not null,
+  source text not null default 'landing_page',
+  invited boolean not null default false,
+  invited_at timestamp with time zone,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  
+  -- Constraints
+  constraint waitlist_email_format check (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+  constraint waitlist_name_length check (char_length(name) >= 1 and char_length(name) <= 200)
+);
+
+-- Waitlist indexes
+create index idx_waitlist_email on public.waitlist(email);
+create index idx_waitlist_created_at on public.waitlist(created_at desc);
+create index idx_waitlist_invited on public.waitlist(invited);
+
+-- Waitlist RLS
+alter table public.waitlist enable row level security;
+
+-- Waitlist policies
+-- IMPORTANT: These policies need to be updated before production deployment
+-- to restrict admin access to specific roles/wallets
+create policy "Allow public insert on waitlist"
+  on public.waitlist for insert
+  with check (true);
+
+-- TODO: Replace with proper admin role check in production
+-- Example: using (auth.jwt() ->> 'role' = 'admin')
+-- or: using (auth.jwt() ->> 'wallet_address' IN ('admin_wallet_1', 'admin_wallet_2'))
+create policy "Allow admin read on waitlist"
+  on public.waitlist for select
+  using (true);
+
+-- TODO: Replace with proper admin role check in production
+create policy "Allow admin update on waitlist"
+  on public.waitlist for update
+  using (true);
