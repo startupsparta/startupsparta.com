@@ -16,6 +16,7 @@ export default function WaitlistPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [scrollIndicatorOpacity, setScrollIndicatorOpacity] = useState(1)
 
   const formRef = useRef<HTMLDivElement>(null)
   const featuresRef = useRef<HTMLDivElement>(null)
@@ -27,6 +28,12 @@ export default function WaitlistPage() {
   const { scrollYProgress } = useScroll()
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95])
+
+  useEffect(() => {
+    return scrollYProgress.onChange((latest) => {
+      setScrollIndicatorOpacity(latest > 0.1 ? 0 : 1)
+    })
+  }, [scrollYProgress])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -380,7 +387,7 @@ export default function WaitlistPage() {
       <motion.div
         className="fixed bottom-8 left-1/2 transform -translate-x-1/2"
         initial={{ opacity: 1, y: 0 }}
-        animate={{ opacity: scrollYProgress.get() > 0.1 ? 0 : 1 }}
+        animate={{ opacity: scrollIndicatorOpacity }}
         transition={{ duration: 0.3 }}
       >
         <motion.div

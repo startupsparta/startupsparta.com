@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
       .from('waitlist')
       .insert({
         email,
-        name: name || null,
-        company: company || null,
-        role: role || null,
-        message: message || null,
+        name: name?.trim() || null,
+        company: company?.trim() || null,
+        role: role?.trim() || null,
+        message: message?.trim() || null,
       })
       .select()
       .single()
