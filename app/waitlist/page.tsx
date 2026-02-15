@@ -160,7 +160,7 @@ export default function WaitlistPage() {
 
               {/* Additional Info */}
               <p className="text-center text-sm text-gray-500 mt-6">
-                We'll notify you as soon as we launch. No spam, ever.
+                We&apos;ll notify you as soon as we launch. No spam, ever.
               </p>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function WaitlistPage() {
                 <span className="text-5xl">🎉</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                You're In!
+                You&apos;re In!
               </h2>
               <p className="text-xl text-gray-300 mb-8">
                 {successMessage}
@@ -180,13 +180,13 @@ export default function WaitlistPage() {
             </div>
 
             <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 md:p-10">
-              <h3 className="text-2xl font-bold text-white mb-4">What's Next?</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">What&apos;s Next?</h3>
               <div className="space-y-4 text-left">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">📧</span>
                   <div>
                     <h4 className="font-semibold text-white mb-1">Check Your Email</h4>
-                    <p className="text-gray-400 text-sm">We'll send you updates about our launch</p>
+                    <p className="text-gray-400 text-sm">We&apos;ll send you updates about our launch</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
