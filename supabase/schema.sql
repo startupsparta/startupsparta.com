@@ -590,3 +590,35 @@ create policy "Allow users to update their own avatars"
 create policy "Allow users to delete their own avatars"
   on storage.objects for delete
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.jwt() ->> 'wallet_address');
+
+-- ============================================================================
+-- WAITLIST TABLE
+-- ============================================================================
+create table public.waitlist (
+  id uuid default uuid_generate_v4() primary key,
+  email text unique not null,
+  name text,
+  company text,
+  role text,
+  message text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  
+  -- Constraints
+  constraint waitlist_email_format check (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+  constraint waitlist_name_length check (name is null or char_length(name) <= 200),
+  constraint waitlist_company_length check (company is null or char_length(company) <= 200),
+  constraint waitlist_role_length check (role is null or char_length(role) <= 100),
+  constraint waitlist_message_length check (message is null or char_length(message) <= 1000)
+);
+
+-- Waitlist indexes
+create index waitlist_email_idx on public.waitlist(email);
+create index waitlist_created_at_idx on public.waitlist(created_at desc);
+
+-- Waitlist RLS
+alter table public.waitlist enable row level security;
+
+-- Waitlist policies
+create policy "Allow public insert on waitlist"
+  on public.waitlist for insert
+  with check (true);
