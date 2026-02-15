@@ -131,12 +131,15 @@ lerna-debug.log*
 .yarn-integrity
 
 # dotenv environment variable files
+# Allow .env.example, .env.development, and .env.production (template files with no secrets)
+# Block all .local files which contain actual secrets
 .env
-.env.development
 .env.test
-.env.production
 .env.local
-.env.*.local
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Turborepo
 .turbo

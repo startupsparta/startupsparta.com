@@ -2,7 +2,12 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "github": {
+    "silent": false,
+    "autoAlias": true,
+    "autoJobCancellation": true
+  }
 }
 
 

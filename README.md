@@ -21,6 +21,13 @@ A bonding curve token launchpad for startups on Solana. Create startup tokens, t
 - **Charts**: TradingView Lightweight Charts
 - **RPC**: Helius for reliable Solana connectivity
 
+## Documentation
+
+- 🚀 **[Quick Preview Access](./QUICK_PREVIEW_ACCESS.md)** - 5-minute guide to access preview environments
+- 📘 **[Quick Start Guide](./QUICKSTART.md)** - Get up and running in 30 minutes
+- 🔧 **[Preview Deployment Guide](./PREVIEW_DEPLOYMENT_GUIDE.md)** - Comprehensive dev/prod environment setup
+- ✅ **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Complete deployment checklist
+
 ## Prerequisites
 
 - Node.js 18+ and npm/yarn
@@ -68,7 +75,11 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Fill in your credentials:
+Then edit `.env.local` with your credentials. See `.env.example` for all available options.
+
+**For detailed environment setup including dev/prod separation and preview deployments, see [PREVIEW_DEPLOYMENT_GUIDE.md](./PREVIEW_DEPLOYMENT_GUIDE.md).**
+
+Quick example for development:
 
 ```env
 # Solana - start with devnet
