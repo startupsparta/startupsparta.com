@@ -22,7 +22,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   
   // Use Helius RPC if available, otherwise fallback to public RPC
   const endpoint = useMemo(() => {
-    return process.env.NEXT_PUBLIC_HELIUS_RPC_URL || clusterApiUrl(network)
+    const rpcUrl = process.env.NEXT_PUBLIC_HELIUS_RPC_URL || clusterApiUrl(network)
+    // Ensure we have a valid URL
+    return rpcUrl || 'https://api.devnet.solana.com'
   }, [network])
 
   const wallets = useMemo(

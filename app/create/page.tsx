@@ -3,6 +3,9 @@
 import { Sidebar } from '@/components/sidebar'
 import { CreateTokenForm } from '@/components/create-token-form'
 
+// Force dynamic rendering to avoid build-time errors
+export const dynamic = 'force-dynamic'
+
 export default function CreatePage() {
   return (
     <div className="flex min-h-screen bg-black">
