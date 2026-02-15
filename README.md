@@ -23,8 +23,9 @@ A bonding curve token launchpad for startups on Solana. Create startup tokens, t
 
 ## Documentation
 
+- 🚀 **[Quick Preview Access](./QUICK_PREVIEW_ACCESS.md)** - 5-minute guide to access preview environments
 - 📘 **[Quick Start Guide](./QUICKSTART.md)** - Get up and running in 30 minutes
-- 🚀 **[Preview Deployment Guide](./PREVIEW_DEPLOYMENT_GUIDE.md)** - Set up dev/prod environments and access preview deployments
+- 🔧 **[Preview Deployment Guide](./PREVIEW_DEPLOYMENT_GUIDE.md)** - Comprehensive dev/prod environment setup
 - ✅ **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Complete deployment checklist
 
 ## Prerequisites
