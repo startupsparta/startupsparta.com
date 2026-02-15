@@ -8,6 +8,9 @@ import { Sidebar } from '@/components/sidebar'
 import { TokenChart } from '@/components/token-chart'
 import { TradingInterface } from '@/components/trading-interface'
 import { HoldersList } from '@/components/holders-list'
+
+// Force dynamic rendering to avoid build-time errors
+export const dynamic = 'force-dynamic'
 import { Comments } from '@/components/comments'
 import { Loader2, ExternalLink, Globe, Send } from 'lucide-react'
 import Image from 'next/image'

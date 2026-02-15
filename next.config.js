@@ -9,6 +9,10 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    // Skip static generation for pages that are blocked by middleware
+    missingSuspenseWithCSRBailout: false,
+  },
   webpack: (config) => {
     config.resolve.fallback = {
       fs: false,

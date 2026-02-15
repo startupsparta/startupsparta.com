@@ -19,9 +19,15 @@ import {
 } from '@solana/spl-token'
 import { BondingCurve, BondingCurveConfig } from '@/lib/bonding-curve'
 
-const connection = new Connection(
-  process.env.NEXT_PUBLIC_HELIUS_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL!
-)
+// Lazy initialize connection to avoid build-time errors
+let _connection: Connection | null = null
+const getConnection = () => {
+  if (!_connection) {
+    const rpcUrl = process.env.NEXT_PUBLIC_HELIUS_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com'
+    _connection = new Connection(rpcUrl)
+  }
+  return _connection
+}
 
 interface TokenMetadata {
   name: string
@@ -69,7 +75,7 @@ export async function createToken(
     const bondingCurvePda = Keypair.generate().publicKey
 
     // Get rent exemption amount
-    const lamports = await getMinimumBalanceForRentExemptMint(connection)
+    const lamports = await getMinimumBalanceForRentExemptMint(getConnection())
 
     // Build transaction
     const transaction = new Transaction()
@@ -113,7 +119,7 @@ export async function createToken(
     // This would create the off-chain metadata account with name, symbol, image URI
 
     // Get recent blockhash
-    const { blockhash } = await connection.getLatestBlockhash()
+    const { blockhash } = await getConnection().getLatestBlockhash()
     transaction.recentBlockhash = blockhash
     transaction.feePayer = wallet.publicKey
 
@@ -124,8 +130,8 @@ export async function createToken(
     const signed = await wallet.signTransaction(transaction)
 
     // Send and confirm
-    const signature = await connection.sendRawTransaction(signed.serialize())
-    await connection.confirmTransaction(signature, 'confirmed')
+    const signature = await getConnection().sendRawTransaction(signed.serialize())
+    await getConnection().confirmTransaction(signature, 'confirmed')
 
     return {
       mintAddress: mintKeypair.publicKey.toBase58(),
@@ -175,7 +181,7 @@ export async function buyTokens(
     const transaction = new Transaction()
 
     // Check if ATA exists, if not create it
-    const ataInfo = await connection.getAccountInfo(ata)
+    const ataInfo = await getConnection().getAccountInfo(ata)
     if (!ataInfo) {
       transaction.add(
         createAssociatedTokenAccountInstruction(
@@ -227,13 +233,13 @@ export async function buyTokens(
     //     .instruction()
     // )
 
-    const { blockhash } = await connection.getLatestBlockhash()
+    const { blockhash } = await getConnection().getLatestBlockhash()
     transaction.recentBlockhash = blockhash
     transaction.feePayer = wallet.publicKey
 
     const signed = await wallet.signTransaction(transaction)
-    const signature = await connection.sendRawTransaction(signed.serialize())
-    await connection.confirmTransaction(signature, 'confirmed')
+    const signature = await getConnection().sendRawTransaction(signed.serialize())
+    await getConnection().confirmTransaction(signature, 'confirmed')
 
     return {
       signature,
@@ -281,13 +287,13 @@ export async function sellTokens(
     //     .instruction()
     // )
 
-    const { blockhash } = await connection.getLatestBlockhash()
+    const { blockhash } = await getConnection().getLatestBlockhash()
     transaction.recentBlockhash = blockhash
     transaction.feePayer = wallet.publicKey
 
     const signed = await wallet.signTransaction(transaction)
-    const signature = await connection.sendRawTransaction(signed.serialize())
-    await connection.confirmTransaction(signature, 'confirmed')
+    const signature = await getConnection().sendRawTransaction(signed.serialize())
+    await getConnection().confirmTransaction(signature, 'confirmed')
 
     return signature
   } catch (error) {
@@ -308,7 +314,7 @@ export async function getTokenBalance(
     const mint = new PublicKey(mintAddress)
     const ata = await getAssociatedTokenAddress(mint, wallet)
 
-    const balance = await connection.getTokenAccountBalance(ata)
+    const balance = await getConnection().getTokenAccountBalance(ata)
     return parseFloat(balance.value.amount) / Math.pow(10, balance.value.decimals)
   } catch (error) {
     return 0

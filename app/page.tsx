@@ -8,6 +8,9 @@ import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useOptionalPrivy } from '@/lib/privy-client'
 
+// Force dynamic rendering to avoid build-time errors
+export const dynamic = 'force-dynamic'
+
 type Token = Database['public']['Tables']['tokens']['Row']
 
 export default function HomePage() {
