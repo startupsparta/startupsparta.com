@@ -7,13 +7,12 @@ export function middleware(request: NextRequest) {
   // 1. Redirect non-www to www (production only)
   if (
     hostname === 'startupsparta.com' &&
-    !hostname.startsWith('www.') &&
     process.env.NODE_ENV === 'production'
   ) {
     const url = request.nextUrl.clone()
     url.hostname = 'www.startupsparta.com'
     url.pathname = '/waitlist'
-    return NextResponse.redirect(url, 301)
+    return NextResponse.redirect(url, 308)
   }
 
   // 2. Allow API routes (especially /api/waitlist)
@@ -39,14 +38,14 @@ export function middleware(request: NextRequest) {
   if (pathname === '/') {
     const url = request.nextUrl.clone()
     url.pathname = '/waitlist'
-    return NextResponse.redirect(url, 307)
+    return NextResponse.redirect(url, 308)
   }
 
   // 6. Block all other routes - redirect to /waitlist
   // This blocks /create, /token/*, /docs, etc.
   const url = request.nextUrl.clone()
   url.pathname = '/waitlist'
-  return NextResponse.redirect(url, 307)
+  return NextResponse.redirect(url, 308)
 }
 
 // Configure which routes the middleware should run on

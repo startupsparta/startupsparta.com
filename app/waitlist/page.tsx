@@ -130,6 +130,7 @@ export default function WaitlistPage() {
           <p className="text-gray-400 text-sm">
             Join <span className="text-spartan-gold font-bold">1000+</span> founders ready to launch
           </p>
+          {/* TODO: Make this dynamic by fetching actual count from database */}
         </div>
 
         {/* Features Grid */}
