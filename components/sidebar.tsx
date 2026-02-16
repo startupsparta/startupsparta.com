@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useOptionalPrivy } from '@/lib/privy-client'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { Home, PlusCircle, TrendingUp, User, LogOut, Info } from 'lucide-react'
+import { Home, PlusCircle, TrendingUp, User, LogOut, Info, FileText } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -17,6 +17,7 @@ export function Sidebar() {
     { name: 'Home', href: '/', icon: Home },
     { name: 'Create Token', href: '/create', icon: PlusCircle },
     { name: 'Trending', href: '/?filter=trending', icon: TrendingUp },
+    { name: 'Documentation', href: '/docs', icon: FileText },
     { name: 'Profile', href: '/profile', icon: User },
   ]
 
@@ -55,7 +56,9 @@ export function Sidebar() {
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href
+          const isActive = item.href === '/docs' 
+            ? pathname.startsWith('/docs')
+            : pathname === item.href
           
           return (
             <Link

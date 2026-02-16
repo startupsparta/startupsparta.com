@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Shield, Scale, DollarSign, MessageCircle } from 'lucide-react'
+import { FileText, Shield, Scale, DollarSign, MessageCircle, BookOpen, TrendingUp } from 'lucide-react'
 
 export default function DocsPage() {
   const docsLinks = [
@@ -20,6 +20,18 @@ export default function DocsPage() {
       href: '/docs/fees',
       icon: DollarSign,
       description: 'Platform fees and transaction costs',
+    },
+    {
+      name: 'Blog',
+      href: '/docs/blog',
+      icon: BookOpen,
+      description: 'Latest updates and insights from StartupSparta',
+    },
+    {
+      name: 'Revenue',
+      href: '/docs/revenue',
+      icon: TrendingUp,
+      description: 'How we generate and allocate platform revenue',
     },
     {
       name: 'Discord',
