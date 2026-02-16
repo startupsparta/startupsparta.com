@@ -39,6 +39,12 @@ module.exports = {
           black: "#000000",
           white: "#ffffff",
         },
+        sequoia: {
+          green: "#2CA06E",
+        },
+        a16z: {
+          red: "#470414",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
