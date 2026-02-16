@@ -15,6 +15,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'trending' | 'new' | 'graduated'>('trending')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null) // ← ADD THIS
   const { login, authenticated } = useOptionalPrivy()
 
   useEffect(() => {
@@ -31,11 +32,16 @@ export default function HomePage() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [filter])
+  }, [filter, selectedCategory]) // ← ADD selectedCategory dependency
 
   const loadTokens = async () => {
     try {
       let query = supabase.from('tokens').select('*')
+
+      // ← ADD CATEGORY FILTER
+      if (selectedCategory) {
+        query = query.eq('category', selectedCategory)
+      }
 
       if (filter === 'trending') {
         query = query.order('market_cap', { ascending: false }).limit(50)
@@ -145,7 +151,11 @@ export default function HomePage() {
             
             <div className="grid grid-cols-4 gap-6">
               {categories.map((category, index) => (
-                <div key={index} className="flex flex-col items-center">
+                <button
+                  key={index}
+                  onClick={() => setSelectedCategory(category.name)} // ← ADD THIS!
+                  className="flex flex-col items-center cursor-pointer" // ← ADD cursor-pointer
+                >
                   <div
                     className={`w-full aspect-square rounded-lg flex items-center justify-center text-2xl mb-3 ${
                       category.fontWeight || 'font-bold'
@@ -153,12 +163,14 @@ export default function HomePage() {
                       category.bgColor
                     } ${category.logoColor} ${
                       category.borderColor ? `border-4 ${category.borderColor}` : ''
-                    } ${category.fontFamily || ''}`}
+                    } ${category.fontFamily || ''} ${
+                      selectedCategory === category.name ? 'ring-4 ring-spartan-gold' : '' // ← ADD VISUAL FEEDBACK
+                    } transition-all hover:scale-105`} // ← ADD HOVER EFFECT
                   >
                     {category.logo}
                   </div>
                   <p className="text-white text-sm font-medium">{category.name}</p>
-                </div>
+                </button>
               ))}
             </div>
           </div>
