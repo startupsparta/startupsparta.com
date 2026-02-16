@@ -7,7 +7,9 @@ import { TokenCard } from '@/components/token-card'
 import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useOptionalPrivy } from '@/lib/privy-client'
-
+import { CookieConsent } from '@/components/cookie-consent'
+import { HowItWorksModal } from '@/components/how-it-works-modal'
+import { UserProfileSetupModal } from '@/components/user-profile-setup-modal'   
 type Token = Database['public']['Tables']['tokens']['Row']
 
 export default function HomePage() {
@@ -236,7 +238,10 @@ export default function HomePage() {
             </div>
           )}
         </div>
+        <HowItWorksModal />
       </main>
+            {/* Cookie Consent Popup */}
+            <CookieConsent /> {/* ← ADD THIS */}
     </div>
   )
 }
