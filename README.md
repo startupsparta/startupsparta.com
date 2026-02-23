@@ -1,5 +1,7 @@
 # StartupSparta - Pump.fun for Startups
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/startupsparta/startupsparta.com)
+
 A bonding curve token launchpad for startups on Solana. Create startup tokens, trade them on a bonding curve, and automatically graduate to Raydium at 170 SOL market cap.
 
 ## Features
@@ -27,6 +29,21 @@ A bonding curve token launchpad for startups on Solana. Create startup tokens, t
 - 📘 **[Quick Start Guide](./QUICKSTART.md)** - Get up and running in 30 minutes
 - 🔧 **[Preview Deployment Guide](./PREVIEW_DEPLOYMENT_GUIDE.md)** - Comprehensive dev/prod environment setup
 - ✅ **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Complete deployment checklist
+
+## GitHub Codespaces (Quickest Way to Start)
+
+The fastest way to get a working dev environment — no local installs needed:
+
+1. Click the green **Code** button on GitHub → **Codespaces** tab → **Create codespace on [your branch]**.
+2. The container automatically installs Node 18 and runs `npm install`.
+3. A `.env.local` file is created from `.env.example` — open it and fill in your credentials.
+4. Start the dev server from the Codespace terminal:
+   ```bash
+   npm run dev
+   ```
+5. The **Ports** panel will show port `3000`. Click **Open in Browser** (or the 🌐 icon) to view the app.
+
+> **Tip:** Set your environment variables in the Codespace **Secrets** (repository Settings → Codespaces → Secrets) so they are available automatically every time you open the Codespace.
 
 ## Prerequisites
 
