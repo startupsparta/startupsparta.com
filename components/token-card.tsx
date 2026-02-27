@@ -77,9 +77,33 @@ export function TokenCard({ token }: TokenCardProps) {
             <div>
               <p className="text-xs text-muted-foreground">Price</p>
               <p className="text-sm font-bold text-white">
-                {(currentPrice * 1_000_000).toFixed(6)} SOL
+                {token.price_sol != null
+                  ? `${token.price_sol.toFixed(4)} SOL`
+                  : `${(currentPrice * 1_000_000).toFixed(6)} SOL`}
               </p>
             </div>
+            {token.volume > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground">Volume</p>
+                <p className="text-sm font-bold text-white">
+                  {token.volume >= 1_000_000_000
+                    ? `${(token.volume / 1_000_000_000).toFixed(1)}B`
+                    : token.volume >= 1_000_000
+                    ? `${(token.volume / 1_000_000).toFixed(1)}M`
+                    : token.volume >= 1000
+                    ? `${(token.volume / 1000).toFixed(0)}K`
+                    : token.volume.toString()}
+                </p>
+              </div>
+            )}
+            {token.price_change_24h !== 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground">24h Change</p>
+                <p className={`text-sm font-bold ${token.price_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {token.price_change_24h >= 0 ? '+' : ''}{token.price_change_24h.toFixed(0)}%
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Progress bar to graduation */}
