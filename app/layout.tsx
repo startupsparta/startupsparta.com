@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Providers } from '@/components/providers'
 import { CookieConsent } from '@/components/cookie-consent'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   title: 'StartupSparta - Join the Waitlist',
@@ -25,6 +26,7 @@ export default function RootLayout({
           <CookieConsent />
           {children}
         </Providers>
+        <Analytics />
       </body>
     </html>
   )
