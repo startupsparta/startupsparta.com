@@ -43,6 +43,10 @@ export type Database = {
           graduated: boolean
           raydium_pool_address: string | null
           graduation_date: string | null
+          category: string | null
+          volume: number
+          price_change_24h: number
+          price_sol: number | null
           created_at: string
           updated_at: string
           deleted_at: string | null
