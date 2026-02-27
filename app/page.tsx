@@ -64,7 +64,15 @@ export default function HomePage() {
     }
   }
 
-  const categories = [
+  const categories: Array<{
+    name: string;
+    bgColor: string;
+    logo: string;
+    logoColor: string;
+    fontFamily?: string;
+    fontWeight?: string;
+    borderColor?: string;
+  }> = [
     {
       name: 'Y-Combinator',
       bgColor: 'bg-orange-500',
