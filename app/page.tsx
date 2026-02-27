@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useOptionalPrivy } from '@/lib/privy-client'
 import { CookieConsent } from '@/components/cookie-consent'
 import { HowItWorksModal } from '@/components/how-it-works-modal'
-import { UserProfileSetupModal } from '@/components/user-profile-setup-modal'   
+import { UserProfileSetupModal } from '@/components/user-profile-setup-modal'
 type Token = Database['public']['Tables']['tokens']['Row']
 
 export default function HomePage() {
