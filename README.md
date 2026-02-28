@@ -380,8 +380,7 @@ MIT License - feel free to use and modify as needed.
 
 ## Contributors
 
-Built by MICHA for StartupSparta 🏛️
+Built by michaelanunn for StartupSparta 
 
----
-
-**Ready to launch?** Follow the setup steps above, deploy to Devnet first for testing, then go live on Mainnet!
+email me @ 
+Michaela@startupsparta.com
