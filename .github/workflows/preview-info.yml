@@ -1,0 +1,50 @@
+# This workflow provides information about preview deployments
+# Vercel handles the actual deployments automatically when connected to GitHub
+
+name: Preview Deployment Info
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  preview-info:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            const comment = `## 🚀 Preview Deployment
+            
+            Your preview deployment is being built by Vercel. 
+            
+            ### What to expect:
+            - ⏱️ Build typically takes 1-2 minutes
+            - 🔗 Vercel bot will comment with preview URL when ready
+            - 🔄 Preview updates automatically on each new commit
+            - 🌐 Preview URL format: \`https://startupsparta-git-${context.payload.pull_request.head.ref}-startupsparta.vercel.app\`
+            
+            ### Testing your preview:
+            1. Wait for Vercel bot comment with preview URL
+            2. Click the URL to access your preview
+            3. Connect Phantom wallet (set to Devnet)
+            4. Test your changes
+            
+            ### Need help?
+            - 📘 [Preview Deployment Guide](${repoUrl}/blob/main/PREVIEW_DEPLOYMENT_GUIDE.md)
+            - 🚀 [Quick Start Guide](${repoUrl}/blob/main/QUICKSTART.md)
+            
+            ---
+            *This is an informational message. Actual deployment is handled by Vercel.*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
