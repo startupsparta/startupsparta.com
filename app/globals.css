@@ -72,6 +72,26 @@
   animation: slideIn 0.3s ease-out;
 }
 
+/* Floating bubbles animation for drink machine effect */
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translate(10px, -10px) scale(1.1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate(-5px, -20px) scale(0.9);
+    opacity: 0.2;
+  }
+  75% {
+    transform: translate(-10px, -5px) scale(1.05);
+    opacity: 0.12;
+  }
+}
+
 /* Pump.fun style button */
 .pump-button {
   @apply bg-spartan-red hover:bg-spartan-gold text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105;
