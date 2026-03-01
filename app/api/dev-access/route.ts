@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Token is valid – set the bypass cookie and redirect home.
-  const redirectUrl = new URL('/', request.url)
+  // Token is valid – set the bypass cookie and redirect to the dashboard.
+  const redirectUrl = new URL('/app', request.url)
   const response = NextResponse.redirect(redirectUrl)
 
   response.cookies.set(COOKIE_NAME, '1', {

@@ -11,7 +11,7 @@ const COMPANIES = [
     name: 'ScaleHouse Systems',
     slug: 'scalehouse',
     ticker: 'SCALE',
-    logo: '/landing/scalehouse.png',
+    logo: '',
     price: 0.0381,
     change: +24.7,
     mktCap: '$38.1K',
@@ -26,7 +26,7 @@ const COMPANIES = [
     name: 'Pegasus',
     slug: 'pegasus',
     ticker: 'PEGX',
-    logo: '/landing/pegasus.png',
+    logo: '',
     price: 0.0512,
     change: +41.2,
     mktCap: '$51.2K',
@@ -41,7 +41,7 @@ const COMPANIES = [
     name: 'StartupSparta',
     slug: 'sparta',
     ticker: 'SPTA',
-    logo: '/landing/sparta.png',
+    logo: '/spartan-icon-clear.png',
     price: 0.0999,
     change: +88.0,
     mktCap: '$99.9K',
@@ -56,7 +56,7 @@ const COMPANIES = [
     name: 'Polymath',
     slug: 'polymath',
     ticker: 'PLYM',
-    logo: '/landing/polymath.png',
+    logo: '',
     price: 0.0274,
     change: -3.1,
     mktCap: '$27.4K',
@@ -71,7 +71,7 @@ const COMPANIES = [
     name: 'Chasi',
     slug: 'chasi',
     ticker: 'CHSI',
-    logo: '/landing/chasi.png',
+    logo: '',
     price: 0.0143,
     change: +12.9,
     mktCap: '$14.3K',
@@ -86,7 +86,7 @@ const COMPANIES = [
     name: 'Reframe',
     slug: 'reframe',
     ticker: 'RFRM',
-    logo: '/landing/reframe.png',
+    logo: '',
     price: 0.0067,
     change: +7.4,
     mktCap: '$6.7K',
@@ -264,7 +264,7 @@ function TradeModal({ company, mode, onClose }: {
 
 // ─── Company Logo with fallback ────────────────────────────────────────────
 function CompanyLogo({ company, size = 40 }: { company: typeof COMPANIES[0]; size?: number }) {
-  const [err, setErr] = useState(false)
+  const [err, setErr] = useState(!company.logo)
   if (err) {
     return (
       <div className="rounded-xl flex items-center justify-center font-black text-sm shrink-0"
