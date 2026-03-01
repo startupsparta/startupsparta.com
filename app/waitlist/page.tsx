@@ -3,39 +3,42 @@
 import Image from 'next/image'
 import { WaitlistForm } from '@/components/waitlist-form'
 import { useEffect, useRef, useState } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence, useInView } from 'framer-motion'
-import { Shield, Zap, TrendingUp, ArrowUpRight, ChevronRight, Lock, Globe, Users } from 'lucide-react'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { Shield, Zap, TrendingUp, ArrowUpRight, Lock, Globe, Users } from 'lucide-react'
+import { PlatformPreview } from '@/components/PlatformPreview'
 
-// ─── Mock platform data ────────────────────────────────────────────────────
 const MOCK_TOKENS = [
-  { name: 'NeuralPay', ticker: 'NRPL', price: 0.0412, change: +18.4, raised: 34200, investors: 142, category: 'Fintech' },
-  { name: 'QuantumSeed', ticker: 'QSED', price: 0.0089, change: +52.1, raised: 12800, investors: 89, category: 'DeepTech' },
-  { name: 'MediChain', ticker: 'MDCH', price: 0.0271, change: -4.2, raised: 67500, investors: 310, category: 'HealthTech' },
-  { name: 'UrbanDAO', ticker: 'URBD', price: 0.0033, change: +7.8, raised: 5400, investors: 44, category: 'PropTech' },
-  { name: 'SolarLink', ticker: 'SLNK', price: 0.0158, change: +31.0, raised: 28900, investors: 201, category: 'CleanTech' },
+  { name: 'NeuralPay',   ticker: 'NRPL', price: 0.0412, change: +18.4, raised: 34200, investors: 142, category: 'Fintech'    },
+  { name: 'QuantumSeed', ticker: 'QSED', price: 0.0089, change: +52.1, raised: 12800, investors:  89, category: 'DeepTech'   },
+  { name: 'MediChain',   ticker: 'MDCH', price: 0.0271, change:  -4.2, raised: 67500, investors: 310, category: 'HealthTech' },
+  { name: 'UrbanDAO',    ticker: 'URBD', price: 0.0033, change:  +7.8, raised:  5400, investors:  44, category: 'PropTech'   },
+  { name: 'SolarLink',   ticker: 'SLNK', price: 0.0158, change: +31.0, raised: 28900, investors: 201, category: 'CleanTech'  },
 ]
 
 const MOCK_ACTIVITY = [
-    { user: '0x3f...a1', action: 'bought', token: 'NRPL', amount: '$420' },
+  { user: '0x3f...a1', action: 'bought', token: 'NRPL', amount: '$420'   },
   { user: '0x9b...cc', action: 'bought', token: 'QSED', amount: '$1,200' },
-  { user: '0x7e...44', action: 'sold', token: 'MDCH', amount: '$88' },
-  { user: '0x2a...f9', action: 'bought', token: 'SLNK', amount: '$340' },
+  { user: '0x7e...44', action: 'sold',   token: 'MDCH', amount: '$88'    },
+  { user: '0x2a...f9', action: 'bought', token: 'SLNK', amount: '$340'   },
 ]
 
-// ─── Animation variants ────────────────────────────────────────────────────
+// ─── THE FIX: cast ease as a tuple so TypeScript is happy ─────────────────────
+const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
+
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { duration: 0.8, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.8, delay: i * 0.12, ease: EASE },
   }),
 }
 
-// ─── Animated Counter ──────────────────────────────────────────────────────
+// ─── Animated Counter ──────────────────────────────────────────────────────────
 function Counter({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
   const [count, setCount] = useState(0)
   const ref = useRef(null)
   const inView = useInView(ref, { once: true })
+
   useEffect(() => {
     if (!inView) return
     let start = 0
@@ -48,10 +51,11 @@ function Counter({ target, prefix = '', suffix = '' }: { target: number; prefix?
     }
     requestAnimationFrame(step)
   }, [inView, target])
+
   return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>
 }
 
-// ─── Ticker Tape ──────────────────────────────────────────────────────────
+// ─── Ticker Tape ───────────────────────────────────────────────────────────────
 function TickerTape() {
   const items = [...MOCK_TOKENS, ...MOCK_TOKENS, ...MOCK_TOKENS]
   return (
@@ -76,13 +80,11 @@ function TickerTape() {
   )
 }
 
-// ─── Platform Preview ─────────────────────────────────────────────────────
-import { PlatformPreview } from '@/components/PlatformPreview'
-// ─── Main Page ────────────────────────────────────────────────────────────
-export default function HomePage() {
+// ─── Main Page ─────────────────────────────────────────────────────────────────
+export default function WaitlistPage() {
   const { scrollY } = useScroll()
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0])
-  const heroY = useTransform(scrollY, [0, 400], [0, -60])
+  const heroY       = useTransform(scrollY, [0, 400], [0, -60])
 
   return (
     <div className="min-h-screen text-white" style={{
@@ -95,14 +97,14 @@ export default function HomePage() {
         ::-webkit-scrollbar { display: none; }
         body { overflow-x: hidden; }
         .bebas { font-family: 'Bebas Neue', cursive; }
-        .mono { font-family: 'DM Mono', monospace; }
+        .mono  { font-family: 'DM Mono', monospace; }
       `}</style>
 
       {/* ── NAV ── */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, ease: EASE }}
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
         style={{ background: 'rgba(5,5,5,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
       >
@@ -115,7 +117,7 @@ export default function HomePage() {
             <span key={item} className="text-sm text-white/40 hover:text-white/80 cursor-pointer transition-colors">{item}</span>
           ))}
           <div
-            className="text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition-all"
+            className="text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer"
             style={{ background: '#dc2626', color: 'white' }}
           >
             Join Waitlist
@@ -135,8 +137,10 @@ export default function HomePage() {
         }} />
 
         {/* Red glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(220,38,38,0.12) 0%, transparent 70%)' }} />
+        <div
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse, rgba(220,38,38,0.12) 0%, transparent 70%)' }}
+        />
 
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           {/* Badge */}
@@ -206,10 +210,10 @@ export default function HomePage() {
       <section className="py-20 px-6 border-b border-white/5">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { label: 'Waitlist Members', value: 300, suffix: '+' },
-            { label: 'Target Raise Cap', value: 5, prefix: '$', suffix: 'M' },
-            { label: 'Avg Days to Close', value: 14, suffix: ' days' },
-            { label: 'Built on Solana TPS', value: 65000, suffix: '+' },
+            { label: 'Waitlist Members',    value: 300,   suffix: '+'     },
+            { label: 'Target Raise Cap',    value: 5,     prefix: '$', suffix: 'M' },
+            { label: 'Avg Days to Close',   value: 14,    suffix: ' days' },
+            { label: 'Built on Solana TPS', value: 65000, suffix: '+'     },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -228,15 +232,16 @@ export default function HomePage() {
 
       {/* ── PLATFORM PREVIEW ── */}
       <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(220,38,38,0.05) 0%, transparent 70%)' }} />
-
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(220,38,38,0.05) 0%, transparent 70%)' }}
+        />
         <div className="max-w-5xl mx-auto">
           <motion.div
             variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-white/10 bg-white/3">
+            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-white/10 bg-white/5">
               <Lock className="w-3 h-3 text-white/40" />
               <span className="text-xs text-white/40 mono tracking-widest">PLATFORM PREVIEW</span>
             </div>
@@ -248,9 +253,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <motion.div
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-          >
+          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             <PlatformPreview />
           </motion.div>
         </div>
@@ -271,24 +274,9 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              {
-                step: '01',
-                title: 'Verify & Launch',
-                desc: 'Domain DNS check, company email, founder identity. Your token goes live in 48 hours. No gatekeepers.',
-                icon: Shield,
-              },
-              {
-                step: '02',
-                title: 'Build & Trade',
-                desc: 'Bonding curve price discovery. Your community invests directly. Price moves with conviction.',
-                icon: TrendingUp,
-              },
-              {
-                step: '03',
-                title: 'Graduate',
-                desc: 'Hit the 170 SOL threshold and automatically graduate to Raydium. Instant DEX liquidity.',
-                icon: Zap,
-              },
+              { step: '01', title: 'Verify & Launch', desc: 'Domain DNS check, company email, founder identity. Your token goes live in 48 hours. No gatekeepers.', icon: Shield    },
+              { step: '02', title: 'Build & Trade',   desc: 'Bonding curve price discovery. Your community invests directly. Price moves with conviction.',            icon: TrendingUp },
+              { step: '03', title: 'Graduate',        desc: 'Hit the 170 SOL threshold and automatically graduate to Raydium. Instant DEX liquidity.',                  icon: Zap       },
             ].map((item, i) => (
               <motion.div
                 key={item.step}
@@ -327,12 +315,12 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { icon: Shield, title: 'Verified Companies', desc: 'DNS + email + founder identity. No anonymous rugs. Every listing is a real business.' },
-              { icon: Globe, title: '506(b) Compliant', desc: 'Self-certification accreditation. Gated with wallet auth. No KYC paperwork.' },
-              { icon: TrendingUp, title: 'Bonding Curve', desc: 'Fair price discovery from day one. Price rises with every buy. Transparent mechanics.' },
-              { icon: Zap, title: 'Solana Native', desc: '$0.00025 per transaction. Sub-second finality. 65,000 TPS capacity.' },
-              { icon: Users, title: 'Community Rounds', desc: 'Founders bring their existing audience. Investors become brand advocates.' },
-              { icon: ArrowUpRight, title: 'Auto Graduation', desc: 'Hit the threshold and automatically deploy to Raydium. No manual steps.' },
+              { icon: Shield,      title: 'Verified Companies', desc: 'DNS + email + founder identity. No anonymous rugs. Every listing is a real business.'   },
+              { icon: Globe,       title: '506(b) Compliant',   desc: 'Self-certification accreditation. Gated with wallet auth. No KYC paperwork.'             },
+              { icon: TrendingUp,  title: 'Bonding Curve',      desc: 'Fair price discovery from day one. Price rises with every buy. Transparent mechanics.'   },
+              { icon: Zap,         title: 'Solana Native',      desc: '$0.00025 per transaction. Sub-second finality. 65,000 TPS capacity.'                     },
+              { icon: Users,       title: 'Community Rounds',   desc: 'Founders bring their existing audience. Investors become brand advocates.'                },
+              { icon: ArrowUpRight,title: 'Auto Graduation',    desc: 'Hit the threshold and automatically deploy to Raydium. No manual steps.'                 },
             ].map((feat, i) => (
               <motion.div
                 key={feat.title}
@@ -352,9 +340,10 @@ export default function HomePage() {
 
       {/* ── FINAL CTA ── */}
       <section className="py-32 px-6 relative overflow-hidden border-t border-white/5">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.1) 0%, transparent 60%)' }} />
-
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.1) 0%, transparent 60%)' }}
+        />
         <motion.div
           variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
           className="relative z-10 max-w-3xl mx-auto text-center"
@@ -366,9 +355,7 @@ export default function HomePage() {
             Join the waitlist. Be first through the gates when we launch.
           </p>
           <WaitlistForm />
-          <p className="text-xs text-white/15 mono mt-6">
-            LAUNCH · TRADE · GRADUATE
-          </p>
+          <p className="text-xs text-white/15 mono mt-6">LAUNCH · TRADE · GRADUATE</p>
         </motion.div>
       </section>
 
@@ -379,9 +366,7 @@ export default function HomePage() {
             <Image src="/spartan-icon-clear.png" alt="StartupSparta" width={24} height={24} className="rounded-md opacity-60" />
             <span className="text-sm text-white/30">StartupSparta</span>
           </div>
-          <div className="text-xs text-white/15 mono">
-            © {new Date().getFullYear()} · Built on Solana
-          </div>
+          <div className="text-xs text-white/15 mono">© {new Date().getFullYear()} · Built on Solana</div>
           <div className="flex gap-6">
             {['Terms', 'Privacy', 'Docs'].map(item => (
               <span key={item} className="text-xs text-white/20 hover:text-white/50 cursor-pointer transition-colors mono">{item}</span>
