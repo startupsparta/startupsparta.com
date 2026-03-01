@@ -1,407 +1,379 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
-import { supabase, type Database } from '@/lib/supabase'
-import { Sidebar } from '@/components/sidebar'
-import { TokenCard } from '@/components/token-card'
-import { Loader2, Search, ChevronLeft, ChevronRight, X, TrendingUp, Sparkles, GraduationCap } from 'lucide-react'
-import Link from 'next/link'
-import { useOptionalPrivy } from '@/lib/privy-client'
-import { CookieConsent } from '@/components/cookie-consent'
-import { HowItWorksModal } from '@/components/how-it-works-modal'
-import { UserProfileSetupModal } from '@/components/user-profile-setup-modal'
-import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import { WaitlistForm } from '@/components/waitlist-form'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { Shield, Zap, TrendingUp, ArrowUpRight, Lock, Globe, Users } from 'lucide-react'
+import { PlatformPreview } from '@/components/PlatformPreview'
 
-type Token = Database['public']['Tables']['tokens']['Row']
-
-// ─── Category data ────────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { name: 'Y-Combinator',      imgUrl: 'https://logo.clearbit.com/ycombinator.com',    bg: '#FF6600', accent: '#f97316' },
-  { name: 'Techstars',         imgUrl: 'https://logo.clearbit.com/techstars.com',       bg: '#1a1a1a', accent: '#ffffff' },
-  { name: 'Antler',            imgUrl: 'https://logo.clearbit.com/antler.co',           bg: '#CC2936', accent: '#ef4444' },
-  { name: '500 Global',        imgUrl: 'https://logo.clearbit.com/500.co',              bg: '#0d2137', accent: '#3b82f6' },
-  { name: 'Pear VC',           imgUrl: 'https://logo.clearbit.com/pear.vc',             bg: '#C8D749', accent: '#22c55e' },
-  { name: 'AngelPad',          imgUrl: 'https://logo.clearbit.com/angelpad.com',        bg: '#CC2936', accent: '#ef4444' },
-  { name: 'First Round',       imgUrl: 'https://logo.clearbit.com/firstround.com',      bg: '#f5f5f5', accent: '#1a1a1a' },
-  { name: 'A16z',              imgUrl: 'https://logo.clearbit.com/a16z.com',            bg: '#f26522', accent: '#f97316' },
-  { name: 'Sequoia Capital',   imgUrl: 'https://logo.clearbit.com/sequoiacap.com',      bg: '#2d7a4f', accent: '#22c55e' },
-  { name: 'NfX',               imgUrl: 'https://logo.clearbit.com/nfx.com',             bg: '#1a3d8f', accent: '#3b82f6' },
-  { name: 'Initialized Capital',imgUrl:'https://logo.clearbit.com/initialized.com',    bg: '#111111', accent: '#ffffff' },
-  { name: 'Floodgate',         imgUrl: 'https://logo.clearbit.com/floodgate.com',       bg: '#1e3a8a', accent: '#60a5fa' },
-  { name: 'Benchmark',         imgUrl: 'https://logo.clearbit.com/benchmark.com',       bg: '#1e3a8a', accent: '#60a5fa' },
-  { name: 'Founders Fund',     imgUrl: 'https://logo.clearbit.com/foundersfund.com',    bg: '#f5f5f5', accent: '#1a1a1a' },
-  { name: 'Lightspeed',        imgUrl: 'https://logo.clearbit.com/lsvp.com',            bg: '#f26522', accent: '#f97316' },
-  { name: 'Accel',             imgUrl: 'https://logo.clearbit.com/accel.com',           bg: '#CC2936', accent: '#ef4444' },
-  { name: 'Index Ventures',    imgUrl: 'https://logo.clearbit.com/indexventures.com',   bg: '#CC2936', accent: '#ef4444' },
-  { name: 'Bessemer',          imgUrl: 'https://logo.clearbit.com/bvp.com',             bg: '#1e3a8a', accent: '#60a5fa' },
+const MOCK_TOKENS = [
+  { name: 'NeuralPay',   ticker: 'NRPL', price: 0.0412, change: +18.4, raised: 34200, investors: 142, category: 'Fintech'    },
+  { name: 'QuantumSeed', ticker: 'QSED', price: 0.0089, change: +52.1, raised: 12800, investors:  89, category: 'DeepTech'   },
+  { name: 'MediChain',   ticker: 'MDCH', price: 0.0271, change:  -4.2, raised: 67500, investors: 310, category: 'HealthTech' },
+  { name: 'UrbanDAO',    ticker: 'URBD', price: 0.0033, change:  +7.8, raised:  5400, investors:  44, category: 'PropTech'   },
+  { name: 'SolarLink',   ticker: 'SLNK', price: 0.0158, change: +31.0, raised: 28900, investors: 201, category: 'CleanTech'  },
 ]
 
-// ─── Filter tab config ─────────────────────────────────────────────────────────
-const FILTERS = [
-  { id: 'trending',  label: 'Trending',  icon: TrendingUp  },
-  { id: 'new',       label: 'New',       icon: Sparkles    },
-  { id: 'graduated', label: 'Graduated', icon: GraduationCap },
-] as const
+const MOCK_ACTIVITY = [
+  { user: '0x3f...a1', action: 'bought', token: 'NRPL', amount: '$420'   },
+  { user: '0x9b...cc', action: 'bought', token: 'QSED', amount: '$1,200' },
+  { user: '0x7e...44', action: 'sold',   token: 'MDCH', amount: '$88'    },
+  { user: '0x2a...f9', action: 'bought', token: 'SLNK', amount: '$340'   },
+]
 
-// ─── Fade/slide variants ───────────────────────────────────────────────────────
-const fadeIn = {
-  hidden:  { opacity: 0, y: 16 },
+// ─── THE FIX: cast ease as a tuple so TypeScript is happy ─────────────────────
+const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { duration: 0.45, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
+    transition: { duration: 0.8, delay: i * 0.12, ease: EASE },
   }),
 }
 
+// ─── Animated Counter ──────────────────────────────────────────────────────────
+function Counter({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
+  const [count, setCount] = useState(0)
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true })
+
+  useEffect(() => {
+    if (!inView) return
+    let start = 0
+    const step = (ts: number) => {
+      if (!start) start = ts
+      const p = Math.min((ts - start) / 2000, 1)
+      const e = 1 - Math.pow(1 - p, 4)
+      setCount(Math.floor(e * target))
+      if (p < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [inView, target])
+
+  return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>
+}
+
+// ─── Ticker Tape ───────────────────────────────────────────────────────────────
+function TickerTape() {
+  const items = [...MOCK_TOKENS, ...MOCK_TOKENS, ...MOCK_TOKENS]
+  return (
+    <div className="w-full overflow-hidden border-y border-white/5 py-2.5" style={{ background: 'rgba(0,0,0,0.7)' }}>
+      <motion.div
+        className="flex gap-10 whitespace-nowrap"
+        animate={{ x: ['0%', '-33.33%'] }}
+        transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
+      >
+        {items.map((t, i) => (
+          <span key={i} className="flex items-center gap-2 text-xs font-mono shrink-0">
+            <span className="text-white/30">◆</span>
+            <span className="text-white/50 tracking-widest">{t.ticker}</span>
+            <span className="text-white/80">${t.price.toFixed(4)}</span>
+            <span className={t.change > 0 ? 'text-emerald-400' : 'text-red-400'}>
+              {t.change > 0 ? '▲' : '▼'}{Math.abs(t.change)}%
+            </span>
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  )
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [tokens, setTokens]                 = useState<Token[]>([])
-  const [loading, setLoading]               = useState(true)
-  const [filter, setFilter]                 = useState<'trending' | 'new' | 'graduated'>('trending')
-  const [searchQuery, setSearchQuery]       = useState('')
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const searchRef                           = useRef<HTMLInputElement>(null)
-  
-  // Fixed bubble positions to avoid hydration issues
-  const bubbles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    size: 20 + (i * 7) % 40,
-    left: (i * 23) % 100,
-    top: (i * 31) % 100,
-    delay: (i * 0.3) % 2,
-    duration: 3 + (i * 0.4) % 4,
-  }))
-
-  const { login, authenticated } = useOptionalPrivy()
-
-  // ⌘K shortcut
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        searchRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
-
-  useEffect(() => {
-    loadTokens()
-    const subscription = supabase
-      .channel('tokens')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tokens' }, loadTokens)
-      .subscribe()
-    return () => { subscription.unsubscribe() }
-  }, [filter, selectedCategories])
-
-  const loadTokens = async () => {
-    try {
-      let query = supabase.from('tokens').select('*')
-      if (selectedCategories.length > 0) {
-        query = query.in('category', selectedCategories)
-      }
-
-      if (filter === 'trending') {
-        query = query.order('market_cap', { ascending: false }).limit(50)
-      } else if (filter === 'new') {
-        query = query.order('created_at', { ascending: false }).limit(50)
-      } else {
-        query = query.eq('graduated', true).order('created_at', { ascending: false }).limit(50)
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      setTokens(data || [])
-    } catch (err) {
-      console.error('Error loading tokens:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filteredTokens = tokens.filter(t => {
-    // Search filter
-    if (searchQuery && !t.name?.toLowerCase().includes(searchQuery.toLowerCase()) && !t.symbol?.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false
-    }
-    return true
-  })
+  const { scrollY } = useScroll()
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0])
+  const heroY       = useTransform(scrollY, [0, 400], [0, -60])
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#080808', fontFamily: "'DM Sans', sans-serif" }}>
-      <Sidebar />
+    <div className="min-h-screen text-white" style={{
+      background: '#050505',
+      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+    }}>
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { display: none; }
+        body { overflow-x: hidden; }
+        .bebas { font-family: 'Bebas Neue', cursive; }
+        .mono  { font-family: 'DM Mono', monospace; }
+      `}</style>
 
-      <main className="flex-1 ml-64 min-h-screen">
+      {/* ── NAV ── */}
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: EASE }}
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
+        style={{ background: 'rgba(5,5,5,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+      >
+        <div className="flex items-center gap-3">
+          <Image src="/spartan-icon-clear.png" alt="StartupSparta" width={32} height={32} className="rounded-lg" />
+          <span className="font-bold tracking-tight text-white">StartupSparta</span>
+        </div>
+        <div className="flex items-center gap-6">
+          {['How it works', 'Features', 'Docs'].map(item => (
+            <span key={item} className="text-sm text-white/40 hover:text-white/80 cursor-pointer transition-colors">{item}</span>
+          ))}
+          <div
+            className="text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer"
+            style={{ background: '#dc2626', color: 'white' }}
+          >
+            Join Waitlist
+          </div>
+        </div>
+      </motion.nav>
 
-        {/* ── TOP BAR ── */}
+      {/* ── HERO ── */}
+      <motion.section
+        style={{ opacity: heroOpacity, y: heroY }}
+        className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 overflow-hidden"
+      >
+        {/* Background grid */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }} />
+
+        {/* Red glow */}
         <div
-          className="sticky top-0 z-30 flex items-center gap-4 px-8 py-4 border-b"
-          style={{ background: 'rgba(8,8,8,0.9)', backdropFilter: 'blur(20px)', borderColor: 'rgba(255,255,255,0.06)' }}
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse, rgba(220,38,38,0.12) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
+          {/* Badge */}
+          <motion.div
+            custom={0} variants={fadeUp} initial="hidden" animate="visible"
+            className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-red-600/20 bg-red-600/5"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-xs text-red-400 mono tracking-widest">WAITLIST NOW OPEN</span>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            custom={1} variants={fadeUp} initial="hidden" animate="visible"
+            className="bebas mb-4 leading-none tracking-wide"
+            style={{ fontSize: 'clamp(72px, 12vw, 160px)', color: 'white' }}
+          >
+            STARTUP
+            <span style={{ color: '#dc2626' }}> SPARTA</span>
+          </motion.h1>
+
+          <motion.p
+            custom={2} variants={fadeUp} initial="hidden" animate="visible"
+            className="text-xl md:text-2xl text-white/40 mb-4 font-light max-w-2xl mx-auto"
+          >
+            The first verified startup equity launchpad on Solana.
+          </motion.p>
+
+          <motion.p
+            custom={3} variants={fadeUp} initial="hidden" animate="visible"
+            className="text-base text-white/25 mb-12 max-w-xl mx-auto leading-relaxed"
+          >
+            Real founders. Verified companies. Bonding curve price discovery.
+            The pump.fun mechanic — built for real businesses.
+          </motion.p>
+
+          {/* CTA */}
+          <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
+            <WaitlistForm />
+          </motion.div>
+
+          <motion.p
+            custom={5} variants={fadeUp} initial="hidden" animate="visible"
+            className="text-xs text-white/20 mono"
+          >
+            506(b) compliant · Privy wallet auth · Solana native
+          </motion.p>
+        </div>
+
+        {/* Scroll hint */}
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm group">
-            <Search
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors"
-              style={{ color: 'rgba(255,255,255,0.25)' }}
-            />
-            <input
-              ref={searchRef}
-              type="text"
-              placeholder="Search startups..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-20 py-2.5 rounded-xl text-sm text-white placeholder:text-white/25 outline-none transition-all"
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(220,38,38,0.4)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
-              onBlur={e  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-            />
-            {searchQuery ? (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <kbd className="mono text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>⌘</kbd>
-                <kbd className="mono text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>K</kbd>
-              </div>
-            )}
-          </div>
+          <span className="text-xs text-white/20 mono tracking-widest">SCROLL</span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }} transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
+          />
+        </motion.div>
+      </motion.section>
 
-          <div className="flex items-center gap-2 ml-auto">
-            <Link
-              href="/create"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-95"
-              style={{ background: '#F5C842', color: '#1a1a1a' }}
+      {/* ── TICKER ── */}
+      <TickerTape />
+
+      {/* ── STATS ── */}
+      <section className="py-20 px-6 border-b border-white/5">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { label: 'Waitlist Members',    value: 300,   suffix: '+'     },
+            { label: 'Target Raise Cap',    value: 5,     prefix: '$', suffix: 'M' },
+            { label: 'Avg Days to Close',   value: 14,    suffix: ' days' },
+            { label: 'Built on Solana TPS', value: 65000, suffix: '+'     },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              custom={i} variants={fadeUp} initial="hidden"
+              whileInView="visible" viewport={{ once: true }}
+              className="text-center"
             >
-              Create coin
-            </Link>
-            {!authenticated && (
-              <button
-                onClick={login}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:bg-white/8 active:scale-95"
-                style={{ border: '1px solid rgba(255,255,255,0.12)' }}
-              >
-                Log in
-              </button>
-            )}
-          </div>
+              <div className="bebas text-5xl md:text-6xl text-white mb-2">
+                <Counter target={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+              </div>
+              <div className="text-xs text-white/30 mono tracking-widest">{stat.label.toUpperCase()}</div>
+            </motion.div>
+          ))}
         </div>
+      </section>
 
-        <div className="px-8 py-8 max-w-7xl mx-auto">
-
-          {/* ── TOP CATEGORIES ── */}
-          <section className="mb-12">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-white">Top Categories</h2>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Filter by investor backing</p>
+      {/* ── PLATFORM PREVIEW ── */}
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(220,38,38,0.05) 0%, transparent 70%)' }}
+        />
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-white/10 bg-white/5">
+              <Lock className="w-3 h-3 text-white/40" />
+              <span className="text-xs text-white/40 mono tracking-widest">PLATFORM PREVIEW</span>
             </div>
+            <h2 className="bebas text-5xl md:text-7xl text-white mb-4">
+              INSIDE THE <span style={{ color: '#dc2626' }}>ARENA</span>
+            </h2>
+            <p className="text-white/40 max-w-lg mx-auto">
+              A live look at what's waiting behind the gates. Real verified startups. Real price discovery.
+            </p>
+          </motion.div>
 
-            {/* Standard grid layout */}
-            <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-              {CATEGORIES.map((cat, i) => {
-                const active = selectedCategories.includes(cat.name)
-                return (
-                  <motion.div
-                    key={cat.name}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.02, duration: 0.2 }}
-                    className="flex flex-col items-center"
-                  >
-                    <motion.button
-                      onClick={() => {
-                        if (active) {
-                          setSelectedCategories(selectedCategories.filter(c => c !== cat.name))
-                        } else {
-                          setSelectedCategories([...selectedCategories, cat.name])
-                        }
-                      }}
-                      className="relative flex flex-col items-center justify-center rounded-xl overflow-hidden transition-all duration-200 shadow-lg w-full aspect-square"
-                      style={{
-                        background: cat.bg,
-                        border: active ? `2px solid ${cat.accent}` : '1px solid rgba(255,255,255,0.1)',
-                        boxShadow: active 
-                          ? `0 4px 16px ${cat.accent}30` 
-                          : '0 2px 8px rgba(0,0,0,0.2)',
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {/* Logo/Image with fallback */}
-                      <img
-                        src={cat.imgUrl}
-                        alt={cat.name}
-                        className="w-16 h-16 object-contain"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement
-                          if (fallback) fallback.classList.remove('hidden')
-                        }}
-                      />
-                      <span className="hidden text-white font-bold text-xl">{cat.name.slice(0,2).toUpperCase()}</span>
-                    </motion.button>
-                    
-                    {/* Category name below */}
-                    <div className="mt-2 text-center w-full">
-                      <div 
-                        className="text-sm font-semibold"
-                        style={{ 
-                          color: active ? cat.accent : 'rgba(255,255,255,0.8)',
-                          transition: 'color 0.2s',
-                        }}
-                      >
-                        {cat.name}
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              })}
-            </div>
+          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <PlatformPreview />
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Active filter pills */}
-            {selectedCategories.length > 0 && (
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-24 px-6 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            className="mb-16"
+          >
+            <h2 className="bebas text-5xl md:text-7xl text-white mb-4">
+              THREE <span style={{ color: '#dc2626' }}>MOVES.</span>
+            </h2>
+            <p className="text-white/40 text-lg max-w-md">From idea to liquid market in days, not years.</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { step: '01', title: 'Verify & Launch', desc: 'Domain DNS check, company email, founder identity. Your token goes live in 48 hours. No gatekeepers.', icon: Shield    },
+              { step: '02', title: 'Build & Trade',   desc: 'Bonding curve price discovery. Your community invests directly. Price moves with conviction.',            icon: TrendingUp },
+              { step: '03', title: 'Graduate',        desc: 'Hit the 170 SOL threshold and automatically graduate to Raydium. Instant DEX liquidity.',                  icon: Zap       },
+            ].map((item, i) => (
               <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="flex flex-wrap items-center gap-2 mt-4"
+                key={item.step}
+                custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                className="group relative p-8 rounded-2xl border border-white/6 transition-all duration-300 cursor-default"
+                style={{ background: 'rgba(255,255,255,0.02)' }}
+                whileHover={{ borderColor: 'rgba(220,38,38,0.3)', background: 'rgba(220,38,38,0.03)' }}
               >
-                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Filtering by:</span>
-                {selectedCategories.map((cat) => (
-                  <div key={cat} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                    style={{ background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.25)', color: '#ef4444' }}>
-                    {cat}
-                    <button onClick={() => setSelectedCategories(selectedCategories.filter(c => c !== cat))} className="ml-1 hover:text-white transition-colors">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                {selectedCategories.length > 0 && (
-                  <button 
-                    onClick={() => { setSelectedCategories([]); }}
-                    className="text-xs px-3 py-1 rounded-full font-semibold transition-colors"
-                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
-                  >
-                    Clear all
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </section>
-
-          {/* ── FILTER TABS + HEADING ── */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <AnimatePresence mode="wait">
-                <motion.h1
-                  key={filter}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-2xl font-bold text-white"
-                >
-                  {filter === 'trending' && 'Trending Startups'}
-                  {filter === 'new'      && 'New Launches'}
-                  {filter === 'graduated'&& 'Graduated to Raydium'}
-                </motion.h1>
-              </AnimatePresence>
-              <p className="text-xs mt-0.5 mono" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                {filteredTokens.length} result{filteredTokens.length !== 1 ? 's' : ''}
-                {selectedCategories.length > 0 && ` • ${selectedCategories.length} VC${selectedCategories.length > 1 ? 's' : ''}`}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-1.5 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              {FILTERS.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setFilter(id)}
-                  className="relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-                  style={{ color: filter === id ? 'white' : 'rgba(255,255,255,0.4)' }}
-                >
-                  {filter === id && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 rounded-lg"
-                      style={{ background: '#dc2626' }}
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5">
-                    <Icon className="w-3.5 h-3.5" />
-                    {label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ── TOKEN GRID ── */}
-          <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.div
-                key="loader"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-32 gap-4"
-              >
-                <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#dc2626' }} />
-                <span className="text-sm mono" style={{ color: 'rgba(255,255,255,0.3)' }}>Loading startups...</span>
-              </motion.div>
-            ) : filteredTokens.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-32 gap-3"
-              >
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-2"
-                  style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.15)' }}>
-                  <span className="text-2xl">⚔</span>
+                <div className="bebas text-8xl text-white/4 absolute top-4 right-6 leading-none group-hover:text-red-600/10 transition-colors">
+                  {item.step}
                 </div>
-                <p className="text-white font-semibold text-lg">No startups found</p>
-                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  {searchQuery ? `No results for "${searchQuery}"` : 'Be the first to launch a startup token!'}
-                </p>
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')}
-                    className="mt-2 text-sm px-4 py-2 rounded-lg transition-colors"
-                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)' }}>
-                    Clear search
-                  </button>
-                )}
+                <item.icon className="w-8 h-8 text-red-500 mb-6" />
+                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                <div className="mt-6 flex items-center gap-2 text-xs text-red-400/60 group-hover:text-red-400 transition-colors">
+                  <span className="mono">LEARN MORE</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </div>
               </motion.div>
-            ) : (
-              <motion.div
-                key={`${filter}-${selectedCategories.join(',')}`}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {filteredTokens.map((token, i) => (
-                  <motion.div
-                    key={token.id}
-                    custom={i}
-                    variants={fadeIn}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <TokenCard token={token} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <HowItWorksModal />
-      </main>
+      {/* ── FEATURES GRID ── */}
+      <section className="py-24 px-6 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="bebas text-5xl md:text-7xl text-white mb-4">
+              BUILT <span style={{ color: '#dc2626' }}>DIFFERENT.</span>
+            </h2>
+          </motion.div>
 
-      <CookieConsent />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: Shield,      title: 'Verified Companies', desc: 'DNS + email + founder identity. No anonymous rugs. Every listing is a real business.'   },
+              { icon: Globe,       title: '506(b) Compliant',   desc: 'Self-certification accreditation. Gated with wallet auth. No KYC paperwork.'             },
+              { icon: TrendingUp,  title: 'Bonding Curve',      desc: 'Fair price discovery from day one. Price rises with every buy. Transparent mechanics.'   },
+              { icon: Zap,         title: 'Solana Native',      desc: '$0.00025 per transaction. Sub-second finality. 65,000 TPS capacity.'                     },
+              { icon: Users,       title: 'Community Rounds',   desc: 'Founders bring their existing audience. Investors become brand advocates.'                },
+              { icon: ArrowUpRight,title: 'Auto Graduation',    desc: 'Hit the threshold and automatically deploy to Raydium. No manual steps.'                 },
+            ].map((feat, i) => (
+              <motion.div
+                key={feat.title}
+                custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                className="p-6 rounded-xl border border-white/5 transition-all duration-300 cursor-default group"
+                style={{ background: 'rgba(255,255,255,0.015)' }}
+                whileHover={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
+              >
+                <feat.icon className="w-6 h-6 text-red-500/70 mb-4 group-hover:text-red-500 transition-colors" />
+                <h3 className="font-bold text-white mb-2 text-sm">{feat.title}</h3>
+                <p className="text-white/30 text-xs leading-relaxed">{feat.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section className="py-32 px-6 relative overflow-hidden border-t border-white/5">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.1) 0%, transparent 60%)' }}
+        />
+        <motion.div
+          variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+          className="relative z-10 max-w-3xl mx-auto text-center"
+        >
+          <h2 className="bebas mb-6 leading-none" style={{ fontSize: 'clamp(56px, 10vw, 120px)', color: 'white' }}>
+            READY TO <span style={{ color: '#dc2626' }}>FIGHT</span>?
+          </h2>
+          <p className="text-white/40 text-lg mb-12 max-w-lg mx-auto">
+            Join the waitlist. Be first through the gates when we launch.
+          </p>
+          <WaitlistForm />
+          <p className="text-xs text-white/15 mono mt-6">LAUNCH · TRADE · GRADUATE</p>
+        </motion.div>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="py-10 px-8 border-t border-white/5">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Image src="/spartan-icon-clear.png" alt="StartupSparta" width={24} height={24} className="rounded-md opacity-60" />
+            <span className="text-sm text-white/30">StartupSparta</span>
+          </div>
+          <div className="text-xs text-white/15 mono">© {new Date().getFullYear()} · Built on Solana</div>
+          <div className="flex gap-6">
+            {['Terms', 'Privacy', 'Docs'].map(item => (
+              <span key={item} className="text-xs text-white/20 hover:text-white/50 cursor-pointer transition-colors mono">{item}</span>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

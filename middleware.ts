@@ -1,33 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * Middleware that gates the home page behind the waitlist when
- * NEXT_PUBLIC_LAUNCH_MODE=waitlist.
+ * Middleware that serves the landing page at / by default.
  *
  * Visitors who have previously visited /api/dev-access?token=<DEV_BYPASS_TOKEN>
- * will have a `dev_bypass` HttpOnly cookie that allows them to bypass the gate
- * and see the full dashboard.
+ * will have a `dev_bypass` HttpOnly cookie that transparently serves the full
+ * platform dashboard (at /app) while keeping the URL as /.
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Only the home page is gated.
+  // Only the home page is handled here.
   if (pathname !== '/') {
-    return NextResponse.next()
-  }
-
-  const launchMode = process.env.NEXT_PUBLIC_LAUNCH_MODE
-  if (launchMode !== 'waitlist') {
     return NextResponse.next()
   }
 
   const devBypassCookie = request.cookies.get('dev_bypass')
   if (devBypassCookie?.value === '1') {
-    return NextResponse.next()
+    // Rewrite transparently to the dashboard (URL stays as /).
+    return NextResponse.rewrite(new URL('/app', request.url))
   }
 
-  // Rewrite the request to the waitlist page transparently (URL stays as /).
-  return NextResponse.rewrite(new URL('/waitlist', request.url))
+  return NextResponse.next()
 }
 
 export const config = {
