@@ -58,7 +58,6 @@ export default function HomePage() {
   const [filter, setFilter]                 = useState<'trending' | 'new' | 'graduated'>('trending')
   const [searchQuery, setSearchQuery]       = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([])
   const searchRef                           = useRef<HTMLInputElement>(null)
   
   // Fixed bubble positions to avoid hydration issues
@@ -92,7 +91,7 @@ export default function HomePage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tokens' }, loadTokens)
       .subscribe()
     return () => { subscription.unsubscribe() }
-  }, [filter, selectedCategories, selectedIndustries])
+  }, [filter, selectedCategories])
 
   const loadTokens = async () => {
     try {
@@ -124,64 +123,8 @@ export default function HomePage() {
     if (searchQuery && !t.name?.toLowerCase().includes(searchQuery.toLowerCase()) && !t.symbol?.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
-    // Industry filter (if industry field exists)
-    if (selectedIndustries.length > 0) {
-      // Assuming tokens have an industry field - adjust based on your schema
-      // For now, this will pass if no industry field exists
-      if (t.industry && !selectedIndustries.includes(t.industry)) {
-        return false
-      }
-    }
     return true
   })
-
-
-// ─── Industry Categories ────────────────────────────────────────────────────────
-const INDUSTRIES = [
-  'B2B',
-  'Analytics',
-  'Engineering, Product and Design',
-  'Finance and Accounting',
-  'Human Resources',
-  'Infrastructure',
-  'Legal',
-  'Marketing',
-  'Office Management',
-  'Operations',
-  'Productivity',
-  'Recruiting and Talent',
-  'Retail',
-  'Sales',
-  'Security',
-  'Supply Chain and Logistics',
-  'Fintech',
-  'Asset Management',
-  'Banking and Exchange',
-  'Consumer Finance',
-  'Credit and Lending',
-  'Insurance',
-  'Payments',
-  'Consumer',
-  'Apparel and Cosmetics',
-  'Consumer Electronics',
-  'Content',
-  'Food and Beverage',
-  'Gaming',
-  'Home and Personal',
-  'Job and Career Services',
-  'Social',
-  'Transportation Services',
-  'Travel, Leisure and Tourism',
-  'Virtual and Augmented Reality',
-  'Healthcare',
-  'Education',
-  'Industrials',
-  'Real Estate and Construction',
-  'Construction',
-  'Housing and Real Estate',
-  'Government',
-  'Unspecified',
-]
 
   return (
     <div className="flex min-h-screen" style={{ background: '#080808', fontFamily: "'DM Sans', sans-serif" }}>
@@ -321,7 +264,7 @@ const INDUSTRIES = [
             </div>
 
             {/* Active filter pills */}
-            {(selectedCategories.length > 0 || selectedIndustries.length > 0) && (
+            {selectedCategories.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -338,18 +281,9 @@ const INDUSTRIES = [
                     </button>
                   </div>
                 ))}
-                {selectedIndustries.map((ind) => (
-                  <div key={ind} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                    style={{ background: 'rgba(245,200,66,0.12)', border: '1px solid rgba(245,200,66,0.25)', color: '#F5C842' }}>
-                    {ind}
-                    <button onClick={() => setSelectedIndustries(selectedIndustries.filter(i => i !== ind))} className="ml-1 hover:text-white transition-colors">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                {(selectedCategories.length > 0 || selectedIndustries.length > 0) && (
+                {selectedCategories.length > 0 && (
                   <button 
-                    onClick={() => { setSelectedCategories([]); setSelectedIndustries([]); }}
+                    onClick={() => { setSelectedCategories([]); }}
                     className="text-xs px-3 py-1 rounded-full font-semibold transition-colors"
                     style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
                   >
@@ -358,41 +292,6 @@ const INDUSTRIES = [
                 )}
               </motion.div>
             )}
-          </section>
-
-          {/* ── INDUSTRY CATEGORIES BAR ── */}
-          <section className="mb-12">
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-white">Industries</h2>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Filter by industry</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {INDUSTRIES.map((industry) => {
-                const active = selectedIndustries.includes(industry)
-                return (
-                  <motion.button
-                    key={industry}
-                    onClick={() => {
-                      if (active) {
-                        setSelectedIndustries(selectedIndustries.filter(i => i !== industry))
-                      } else {
-                        setSelectedIndustries([...selectedIndustries, industry])
-                      }
-                    }}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-                    style={{
-                      background: active ? 'rgba(245,200,66,0.15)' : 'rgba(255,255,255,0.05)',
-                      border: active ? '1px solid rgba(245,200,66,0.4)' : '1px solid rgba(255,255,255,0.1)',
-                      color: active ? '#F5C842' : 'rgba(255,255,255,0.7)',
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {industry}
-                  </motion.button>
-                )
-              })}
-            </div>
           </section>
 
           {/* ── FILTER TABS + HEADING ── */}
@@ -415,7 +314,6 @@ const INDUSTRIES = [
               <p className="text-xs mt-0.5 mono" style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {filteredTokens.length} result{filteredTokens.length !== 1 ? 's' : ''}
                 {selectedCategories.length > 0 && ` • ${selectedCategories.length} VC${selectedCategories.length > 1 ? 's' : ''}`}
-                {selectedIndustries.length > 0 && ` • ${selectedIndustries.length} Industr${selectedIndustries.length > 1 ? 'ies' : 'y'}`}
               </p>
             </div>
 
@@ -479,7 +377,7 @@ const INDUSTRIES = [
               </motion.div>
             ) : (
               <motion.div
-                key={`${filter}-${selectedCategories.join(',')}-${selectedIndustries.join(',')}`}
+                key={`${filter}-${selectedCategories.join(',')}`}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
