@@ -1,394 +1,247 @@
 'use client'
 
-import Image from 'next/image'
-import { WaitlistForm } from '@/components/waitlist-form'
-import { useEffect, useRef, useState } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence, useInView } from 'framer-motion'
-import { Shield, Zap, TrendingUp, ArrowUpRight, ChevronRight, Lock, Globe, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { supabase, type Database } from '@/lib/supabase'
+import { Sidebar } from '@/components/sidebar'
+import { TokenCard } from '@/components/token-card'
+import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { useOptionalPrivy } from '@/lib/privy-client'
+import { CookieConsent } from '@/components/cookie-consent'
+import { HowItWorksModal } from '@/components/how-it-works-modal'
+import { UserProfileSetupModal } from '@/components/user-profile-setup-modal'   
+type Token = Database['public']['Tables']['tokens']['Row']
 
-// ─── Mock platform data ────────────────────────────────────────────────────
-const MOCK_TOKENS = [
-  { name: 'NeuralPay', ticker: 'NRPL', price: 0.0412, change: +18.4, raised: 34200, investors: 142, category: 'Fintech' },
-  { name: 'QuantumSeed', ticker: 'QSED', price: 0.0089, change: +52.1, raised: 12800, investors: 89, category: 'DeepTech' },
-  { name: 'MediChain', ticker: 'MDCH', price: 0.0271, change: -4.2, raised: 67500, investors: 310, category: 'HealthTech' },
-  { name: 'UrbanDAO', ticker: 'URBD', price: 0.0033, change: +7.8, raised: 5400, investors: 44, category: 'PropTech' },
-  { name: 'SolarLink', ticker: 'SLNK', price: 0.0158, change: +31.0, raised: 28900, investors: 201, category: 'CleanTech' },
-]
-
-const MOCK_ACTIVITY = [
-    { user: '0x3f...a1', action: 'bought', token: 'NRPL', amount: '$420' },
-  { user: '0x9b...cc', action: 'bought', token: 'QSED', amount: '$1,200' },
-  { user: '0x7e...44', action: 'sold', token: 'MDCH', amount: '$88' },
-  { user: '0x2a...f9', action: 'bought', token: 'SLNK', amount: '$340' },
-]
-
-// ─── Animation variants ────────────────────────────────────────────────────
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.8, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] },
-  }),
-}
-
-// ─── Animated Counter ──────────────────────────────────────────────────────
-function Counter({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
-  const [count, setCount] = useState(0)
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
-  useEffect(() => {
-    if (!inView) return
-    let start = 0
-    const step = (ts: number) => {
-      if (!start) start = ts
-      const p = Math.min((ts - start) / 2000, 1)
-      const e = 1 - Math.pow(1 - p, 4)
-      setCount(Math.floor(e * target))
-      if (p < 1) requestAnimationFrame(step)
-    }
-    requestAnimationFrame(step)
-  }, [inView, target])
-  return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>
-}
-
-// ─── Ticker Tape ──────────────────────────────────────────────────────────
-function TickerTape() {
-  const items = [...MOCK_TOKENS, ...MOCK_TOKENS, ...MOCK_TOKENS]
-  return (
-    <div className="w-full overflow-hidden border-y border-white/5 py-2.5" style={{ background: 'rgba(0,0,0,0.7)' }}>
-      <motion.div
-        className="flex gap-10 whitespace-nowrap"
-        animate={{ x: ['0%', '-33.33%'] }}
-        transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
-      >
-        {items.map((t, i) => (
-          <span key={i} className="flex items-center gap-2 text-xs font-mono shrink-0">
-            <span className="text-white/30">◆</span>
-            <span className="text-white/50 tracking-widest">{t.ticker}</span>
-            <span className="text-white/80">${t.price.toFixed(4)}</span>
-            <span className={t.change > 0 ? 'text-emerald-400' : 'text-red-400'}>
-              {t.change > 0 ? '▲' : '▼'}{Math.abs(t.change)}%
-            </span>
-          </span>
-        ))}
-      </motion.div>
-    </div>
-  )
-}
-
-// ─── Platform Preview ─────────────────────────────────────────────────────
-import { PlatformPreview } from '@/components/PlatformPreview'
-// ─── Main Page ────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const { scrollY } = useScroll()
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0])
-  const heroY = useTransform(scrollY, [0, 400], [0, -60])
+  const [tokens, setTokens] = useState<Token[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'trending' | 'new' | 'graduated'>('trending')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null) // ← ADD THIS
+  const { login, authenticated } = useOptionalPrivy()
+
+  useEffect(() => {
+    loadTokens()
+
+    // Subscribe to real-time updates
+    const subscription = supabase
+      .channel('tokens')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tokens' }, () => {
+        loadTokens()
+      })
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [filter, selectedCategory]) // ← ADD selectedCategory dependency
+
+  const loadTokens = async () => {
+    try {
+      let query = supabase.from('tokens').select('*')
+
+      // ← ADD CATEGORY FILTER
+      if (selectedCategory) {
+        query = query.eq('category', selectedCategory)
+      }
+
+      if (filter === 'trending') {
+        query = query.order('market_cap', { ascending: false }).limit(50)
+      } else if (filter === 'new') {
+        query = query.order('created_at', { ascending: false }).limit(50)
+      } else if (filter === 'graduated') {
+        query = query.eq('graduated', true).order('created_at', { ascending: false }).limit(50)
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+      setTokens(data || [])
+    } catch (error) {
+      console.error('Error loading tokens:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const categories: Array<{ name: string; bgColor: string; logo: string; logoColor: string; borderColor?: string; fontFamily?: string; fontWeight?: string }> = [
+    {
+      name: 'Y-Combinator',
+      bgColor: 'bg-orange-500',
+      logo: 'Y',
+      logoColor: 'text-white',
+    },
+    {
+      name: 'Accel',
+      bgColor: 'bg-sky-100',
+      logo: 'Accel',
+      logoColor: 'text-black',
+      fontFamily: 'font-serif',
+    },
+    {
+      name: 'Sequoia Capital',
+      bgColor: 'bg-sequoia-green',
+      logo: 'SEQUOIA',
+      logoColor: 'text-amber-50',
+    },
+    {
+      name: 'A16z',
+      bgColor: 'bg-a16z-red',
+      logo: 'A16Z',
+      logoColor: 'text-white',
+      fontFamily: 'font-sans tracking-tight',
+      fontWeight: 'font-black',
+    },
+  ]
 
   return (
-    <div className="min-h-screen text-white" style={{
-      background: '#050505',
-      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
-    }}>
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { display: none; }
-        body { overflow-x: hidden; }
-        .bebas { font-family: 'Bebas Neue', cursive; }
-        .mono { font-family: 'DM Mono', monospace; }
-      `}</style>
-
-      {/* ── NAV ── */}
-      <motion.nav
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
-        style={{ background: 'rgba(5,5,5,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Image src="/spartan-icon-clear.png" alt="StartupSparta" width={32} height={32} className="rounded-lg" />
-          <span className="font-bold tracking-tight text-white">StartupSparta</span>
-        </div>
-        <div className="flex items-center gap-6">
-          {['How it works', 'Features', 'Docs'].map(item => (
-            <span key={item} className="text-sm text-white/40 hover:text-white/80 cursor-pointer transition-colors">{item}</span>
-          ))}
-          <div
-            className="text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition-all"
-            style={{ background: '#dc2626', color: 'white' }}
-          >
-            Join Waitlist
-          </div>
-        </div>
-      </motion.nav>
-
-      {/* ── HERO ── */}
-      <motion.section
-        style={{ opacity: heroOpacity, y: heroY }}
-        className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 overflow-hidden"
-      >
-        {/* Background grid */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }} />
-
-        {/* Red glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse, rgba(220,38,38,0.12) 0%, transparent 70%)' }} />
-
-        <div className="relative z-10 max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <motion.div
-            custom={0} variants={fadeUp} initial="hidden" animate="visible"
-            className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-red-600/20 bg-red-600/5"
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs text-red-400 mono tracking-widest">WAITLIST NOW OPEN</span>
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            custom={1} variants={fadeUp} initial="hidden" animate="visible"
-            className="bebas mb-4 leading-none tracking-wide"
-            style={{ fontSize: 'clamp(72px, 12vw, 160px)', color: 'white' }}
-          >
-            STARTUP
-            <span style={{ color: '#dc2626' }}> SPARTA</span>
-          </motion.h1>
-
-          <motion.p
-            custom={2} variants={fadeUp} initial="hidden" animate="visible"
-            className="text-xl md:text-2xl text-white/40 mb-4 font-light max-w-2xl mx-auto"
-          >
-            The first verified startup equity launchpad on Solana.
-          </motion.p>
-
-          <motion.p
-            custom={3} variants={fadeUp} initial="hidden" animate="visible"
-            className="text-base text-white/25 mb-12 max-w-xl mx-auto leading-relaxed"
-          >
-            Real founders. Verified companies. Bonding curve price discovery.
-            The pump.fun mechanic — built for real businesses.
-          </motion.p>
-
-          {/* CTA */}
-          <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="mb-6">
-            <WaitlistForm />
-          </motion.div>
-
-          <motion.p
-            custom={5} variants={fadeUp} initial="hidden" animate="visible"
-            className="text-xs text-white/20 mono"
-          >
-            506(b) compliant · Privy wallet auth · Solana native
-          </motion.p>
-        </div>
-
-        {/* Scroll hint */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <span className="text-xs text-white/20 mono tracking-widest">SCROLL</span>
-          <motion.div
-            animate={{ y: [0, 6, 0] }} transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"
-          />
-        </motion.div>
-      </motion.section>
-
-      {/* ── TICKER ── */}
-      <TickerTape />
-
-      {/* ── STATS ── */}
-      <section className="py-20 px-6 border-b border-white/5">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { label: 'Waitlist Members', value: 300, suffix: '+' },
-            { label: 'Target Raise Cap', value: 5, prefix: '$', suffix: 'M' },
-            { label: 'Avg Days to Close', value: 14, suffix: ' days' },
-            { label: 'Built on Solana TPS', value: 65000, suffix: '+' },
-          ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              custom={i} variants={fadeUp} initial="hidden"
-              whileInView="visible" viewport={{ once: true }}
-              className="text-center"
-            >
-              <div className="bebas text-5xl md:text-6xl text-white mb-2">
-                <Counter target={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+    <div className="flex min-h-screen bg-black">
+      <Sidebar />
+      
+      <main className="flex-1 ml-64 p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header with Search and Buttons */}
+          <div className="flex items-center justify-between mb-8 gap-4">
+            {/* Search Bar */}
+            <div className="flex-1 relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Q Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-20 py-3 bg-card border border-border rounded-lg text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-spartan-red"
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-xs text-muted-foreground">
+                <kbd className="px-2 py-1 bg-muted rounded">⌘</kbd>
+                <kbd className="px-2 py-1 bg-muted rounded">K</kbd>
               </div>
-              <div className="text-xs text-white/30 mono tracking-widest">{stat.label.toUpperCase()}</div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── PLATFORM PREVIEW ── */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(220,38,38,0.05) 0%, transparent 70%)' }} />
-
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-white/10 bg-white/3">
-              <Lock className="w-3 h-3 text-white/40" />
-              <span className="text-xs text-white/40 mono tracking-widest">PLATFORM PREVIEW</span>
             </div>
-            <h2 className="bebas text-5xl md:text-7xl text-white mb-4">
-              INSIDE THE <span style={{ color: '#dc2626' }}>ARENA</span>
-            </h2>
-            <p className="text-white/40 max-w-lg mx-auto">
-              A live look at what's waiting behind the gates. Real verified startups. Real price discovery.
-            </p>
-          </motion.div>
 
-          <motion.div
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-          >
-            <PlatformPreview />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="py-24 px-6 border-t border-white/5">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="mb-16"
-          >
-            <h2 className="bebas text-5xl md:text-7xl text-white mb-4">
-              THREE <span style={{ color: '#dc2626' }}>MOVES.</span>
-            </h2>
-            <p className="text-white/40 text-lg max-w-md">From idea to liquid market in days, not years.</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                step: '01',
-                title: 'Verify & Launch',
-                desc: 'Domain DNS check, company email, founder identity. Your token goes live in 48 hours. No gatekeepers.',
-                icon: Shield,
-              },
-              {
-                step: '02',
-                title: 'Build & Trade',
-                desc: 'Bonding curve price discovery. Your community invests directly. Price moves with conviction.',
-                icon: TrendingUp,
-              },
-              {
-                step: '03',
-                title: 'Graduate',
-                desc: 'Hit the 170 SOL threshold and automatically graduate to Raydium. Instant DEX liquidity.',
-                icon: Zap,
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                className="group relative p-8 rounded-2xl border border-white/6 transition-all duration-300 cursor-default"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
-                whileHover={{ borderColor: 'rgba(220,38,38,0.3)', background: 'rgba(220,38,38,0.03)' }}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/create"
+                className="bg-spartan-gold hover:bg-spartan-gold/90 text-black font-medium px-6 py-3 rounded-lg transition-colors"
               >
-                <div className="bebas text-8xl text-white/4 absolute top-4 right-6 leading-none group-hover:text-red-600/10 transition-colors">
-                  {item.step}
-                </div>
-                <item.icon className="w-8 h-8 text-red-500 mb-6" />
-                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
-                <div className="mt-6 flex items-center gap-2 text-xs text-red-400/60 group-hover:text-red-400 transition-colors">
-                  <span className="mono">LEARN MORE</span>
-                  <ArrowUpRight className="w-3 h-3" />
-                </div>
-              </motion.div>
-            ))}
+                Create coin
+              </Link>
+              {!authenticated && (
+                <button
+                  onClick={login}
+                  className="bg-card hover:bg-muted text-white font-medium px-6 py-3 rounded-lg border border-border transition-colors"
+                >
+                  Log in
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* ── FEATURES GRID ── */}
-      <section className="py-24 px-6 border-t border-white/5">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="bebas text-5xl md:text-7xl text-white mb-4">
-              BUILT <span style={{ color: '#dc2626' }}>DIFFERENT.</span>
-            </h2>
-          </motion.div>
+          {/* Top Categories Section */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold text-white">Top Categories</h2>
+              <div className="flex items-center gap-2">
+                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <button className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-6">
+              {categories.map((category, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedCategory(category.name)} // ← ADD THIS!
+                  className="flex flex-col items-center cursor-pointer" // ← ADD cursor-pointer
+                >
+                  <div
+                    className={`w-full aspect-square rounded-lg flex items-center justify-center text-2xl mb-3 ${
+                      category.fontWeight || 'font-bold'
+                    } ${
+                      category.bgColor
+                    } ${category.logoColor} ${
+                      category.borderColor ? `border-4 ${category.borderColor}` : ''
+                    } ${category.fontFamily || ''} ${
+                      selectedCategory === category.name ? 'ring-4 ring-spartan-gold' : '' // ← ADD VISUAL FEEDBACK
+                    } transition-all hover:scale-105`} // ← ADD HOVER EFFECT
+                  >
+                    {category.logo}
+                  </div>
+                  <p className="text-white text-sm font-medium">{category.name}</p>
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { icon: Shield, title: 'Verified Companies', desc: 'DNS + email + founder identity. No anonymous rugs. Every listing is a real business.' },
-              { icon: Globe, title: '506(b) Compliant', desc: 'Self-certification accreditation. Gated with wallet auth. No KYC paperwork.' },
-              { icon: TrendingUp, title: 'Bonding Curve', desc: 'Fair price discovery from day one. Price rises with every buy. Transparent mechanics.' },
-              { icon: Zap, title: 'Solana Native', desc: '$0.00025 per transaction. Sub-second finality. 65,000 TPS capacity.' },
-              { icon: Users, title: 'Community Rounds', desc: 'Founders bring their existing audience. Investors become brand advocates.' },
-              { icon: ArrowUpRight, title: 'Auto Graduation', desc: 'Hit the threshold and automatically deploy to Raydium. No manual steps.' },
-            ].map((feat, i) => (
-              <motion.div
-                key={feat.title}
-                custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                className="p-6 rounded-xl border border-white/5 transition-all duration-300 cursor-default group"
-                style={{ background: 'rgba(255,255,255,0.015)' }}
-                whileHover={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
+          {/* Filter Buttons */}
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-4xl font-bold text-white">
+              {filter === 'trending' && 'Trending Startups'}
+              {filter === 'new' && 'New Launches'}
+              {filter === 'graduated' && 'Graduated to Raydium'}
+            </h1>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFilter('trending')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  filter === 'trending'
+                    ? 'bg-spartan-red text-white'
+                    : 'bg-card text-muted-foreground hover:bg-muted'
+                }`}
               >
-                <feat.icon className="w-6 h-6 text-red-500/70 mb-4 group-hover:text-red-500 transition-colors" />
-                <h3 className="font-bold text-white mb-2 text-sm">{feat.title}</h3>
-                <p className="text-white/30 text-xs leading-relaxed">{feat.desc}</p>
-              </motion.div>
-            ))}
+                Trending
+              </button>
+              <button
+                onClick={() => setFilter('new')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  filter === 'new'
+                    ? 'bg-spartan-red text-white'
+                    : 'bg-card text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                New
+              </button>
+              <button
+                onClick={() => setFilter('graduated')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  filter === 'graduated'
+                    ? 'bg-spartan-red text-white'
+                    : 'bg-card text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                Graduated
+              </button>
+            </div>
           </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-spartan-red" />
+            </div>
+          ) : tokens.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground text-lg">No tokens found</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Be the first to launch a startup token!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tokens.map((token) => (
+                <TokenCard key={token.id} token={token} />
+              ))}
+            </div>
+          )}
         </div>
-      </section>
-
-      {/* ── FINAL CTA ── */}
-      <section className="py-32 px-6 relative overflow-hidden border-t border-white/5">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.1) 0%, transparent 60%)' }} />
-
-        <motion.div
-          variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
-          className="relative z-10 max-w-3xl mx-auto text-center"
-        >
-          <h2 className="bebas mb-6 leading-none" style={{ fontSize: 'clamp(56px, 10vw, 120px)', color: 'white' }}>
-            READY TO <span style={{ color: '#dc2626' }}>FIGHT</span>?
-          </h2>
-          <p className="text-white/40 text-lg mb-12 max-w-lg mx-auto">
-            Join the waitlist. Be first through the gates when we launch.
-          </p>
-          <WaitlistForm />
-          <p className="text-xs text-white/15 mono mt-6">
-            LAUNCH · TRADE · GRADUATE
-          </p>
-        </motion.div>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer className="py-10 px-8 border-t border-white/5">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Image src="/spartan-icon-clear.png" alt="StartupSparta" width={24} height={24} className="rounded-md opacity-60" />
-            <span className="text-sm text-white/30">StartupSparta</span>
-          </div>
-          <div className="text-xs text-white/15 mono">
-            © {new Date().getFullYear()} · Built on Solana
-          </div>
-          <div className="flex gap-6">
-            {['Terms', 'Privacy', 'Docs'].map(item => (
-              <span key={item} className="text-xs text-white/20 hover:text-white/50 cursor-pointer transition-colors mono">{item}</span>
-            ))}
-          </div>
-        </div>
-      </footer>
+        <HowItWorksModal />
+      </main>
+            {/* Cookie Consent Popup */}
+            <CookieConsent /> {/* ← ADD THIS */}
     </div>
   )
 }
