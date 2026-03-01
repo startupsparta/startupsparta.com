@@ -16,180 +16,24 @@ type Token = Database['public']['Tables']['tokens']['Row']
 
 // ─── Category data ────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  {
-    name: 'Y-Combinator',
-    logo: 'Y',
-    bg: '#FF6B00', // YC orange
-    textColor: '#fff',
-    font: 'Georgia, serif',
-    weight: '900',
-    accent: '#FF6B00',
-  },
-  {
-    name: 'Accel',
-    logo: 'Accel',
-    bg: '#0066CC', // Accel blue
-    textColor: '#fff',
-    font: 'Georgia, serif',
-    weight: '700',
-    accent: '#0066CC',
-  },
-  {
-    name: 'Sequoia Capital',
-    logo: 'SEQUOIA',
-    bg: '#00A86B', // Sequoia green
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#00A86B',
-  },
-  {
-    name: 'A16z',
-    logo: 'A16Z',
-    bg: '#8B0000', // A16z dark red
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '900',
-    accent: '#8B0000',
-  },
-  {
-    name: 'Founders Fund',
-    logo: 'FF',
-    bg: '#1A1A2E', // Founders Fund dark blue
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '900',
-    accent: '#1A1A2E',
-  },
-  // ─── THE SEED (THE "BELIEVER" ROUND) ────────────────────────────────────────────
-  {
-    name: 'Techstars',
-    logo: 'TS',
-    bg: '#000000',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '700',
-    accent: '#000000',
-  },
-  {
-    name: 'Antler',
-    logo: 'Λ',
-    bg: '#dc2626',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '900',
-    accent: '#dc2626',
-  },
-  {
-    name: '500 Global',
-    logo: '500',
-    bg: '#000000',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#000000',
-  },
-  {
-    name: 'Pear VC',
-    logo: 'PEAR',
-    bg: '#86efac',
-    textColor: '#064e3b',
-    font: 'inherit',
-    weight: '700',
-    accent: '#4ade80',
-  },
-  {
-    name: 'AngelPad',
-    logo: 'AP',
-    bg: '#dc2626',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#dc2626',
-  },
-  // ─── SEED (THE "TRACTION" ROUND) ────────────────────────────────────────────────
-  {
-    name: 'First Round',
-    logo: '1ST',
-    bg: '#f3f4f6',
-    textColor: '#111827',
-    font: 'inherit',
-    weight: '800',
-    accent: '#6b7280',
-  },
-  {
-    name: 'Sequoia Arc',
-    logo: 'ARC',
-    bg: '#16a34a',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#22c55e',
-  },
-  {
-    name: 'NfX',
-    logo: 'NfX',
-    bg: '#1e3a8a',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#3b82f6',
-  },
-  {
-    name: 'Initialized Capital',
-    logo: 'iO',
-    bg: '#000000',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#000000',
-  },
-  {
-    name: 'Floodgate',
-    logo: 'FG',
-    bg: '#1e3a8a',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#3b82f6',
-  },
-  // ─── SERIES A (THE "SCALE" ROUND) ────────────────────────────────────────────────
-  {
-    name: 'Benchmark',
-    logo: 'BM',
-    bg: '#1e3a8a',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#3b82f6',
-  },
-  {
-    name: 'Lightspeed',
-    logo: 'LS',
-    bg: '#FF6B35', // Lightspeed orange
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#FF6B35',
-  },
-  {
-    name: 'Index Ventures',
-    logo: 'IDX',
-    bg: '#FF4500', // Index orange-red
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#FF4500',
-  },
-  {
-    name: 'Bessemer',
-    logo: 'B',
-    bg: '#1e3a8a',
-    textColor: '#fff',
-    font: 'inherit',
-    weight: '800',
-    accent: '#3b82f6',
-  },
+  { name: 'Y-Combinator',      imgUrl: 'https://logo.clearbit.com/ycombinator.com',    bg: '#FF6600', accent: '#f97316' },
+  { name: 'Techstars',         imgUrl: 'https://logo.clearbit.com/techstars.com',       bg: '#1a1a1a', accent: '#ffffff' },
+  { name: 'Antler',            imgUrl: 'https://logo.clearbit.com/antler.co',           bg: '#CC2936', accent: '#ef4444' },
+  { name: '500 Global',        imgUrl: 'https://logo.clearbit.com/500.co',              bg: '#0d2137', accent: '#3b82f6' },
+  { name: 'Pear VC',           imgUrl: 'https://logo.clearbit.com/pear.vc',             bg: '#C8D749', accent: '#22c55e' },
+  { name: 'AngelPad',          imgUrl: 'https://logo.clearbit.com/angelpad.com',        bg: '#CC2936', accent: '#ef4444' },
+  { name: 'First Round',       imgUrl: 'https://logo.clearbit.com/firstround.com',      bg: '#f5f5f5', accent: '#1a1a1a' },
+  { name: 'A16z',              imgUrl: 'https://logo.clearbit.com/a16z.com',            bg: '#f26522', accent: '#f97316' },
+  { name: 'Sequoia Capital',   imgUrl: 'https://logo.clearbit.com/sequoiacap.com',      bg: '#2d7a4f', accent: '#22c55e' },
+  { name: 'NfX',               imgUrl: 'https://logo.clearbit.com/nfx.com',             bg: '#1a3d8f', accent: '#3b82f6' },
+  { name: 'Initialized Capital',imgUrl:'https://logo.clearbit.com/initialized.com',    bg: '#111111', accent: '#ffffff' },
+  { name: 'Floodgate',         imgUrl: 'https://logo.clearbit.com/floodgate.com',       bg: '#1e3a8a', accent: '#60a5fa' },
+  { name: 'Benchmark',         imgUrl: 'https://logo.clearbit.com/benchmark.com',       bg: '#1e3a8a', accent: '#60a5fa' },
+  { name: 'Founders Fund',     imgUrl: 'https://logo.clearbit.com/foundersfund.com',    bg: '#f5f5f5', accent: '#1a1a1a' },
+  { name: 'Lightspeed',        imgUrl: 'https://logo.clearbit.com/lsvp.com',            bg: '#f26522', accent: '#f97316' },
+  { name: 'Accel',             imgUrl: 'https://logo.clearbit.com/accel.com',           bg: '#CC2936', accent: '#ef4444' },
+  { name: 'Index Ventures',    imgUrl: 'https://logo.clearbit.com/indexventures.com',   bg: '#CC2936', accent: '#ef4444' },
+  { name: 'Bessemer',          imgUrl: 'https://logo.clearbit.com/bvp.com',             bg: '#1e3a8a', accent: '#60a5fa' },
 ]
 
 // ─── Filter tab config ─────────────────────────────────────────────────────────
@@ -215,7 +59,6 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery]       = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([])
-  const [catOffset, setCatOffset]           = useState(0)
   const searchRef                           = useRef<HTMLInputElement>(null)
   
   // Fixed bubble positions to avoid hydration issues
@@ -292,23 +135,52 @@ export default function HomePage() {
     return true
   })
 
-  const visibleCats = CATEGORIES.slice(catOffset, catOffset + 10)
 
 // ─── Industry Categories ────────────────────────────────────────────────────────
 const INDUSTRIES = [
   'B2B',
-  'Fintech',
-  'Consumer',
+  'Analytics',
+  'Engineering, Product and Design',
+  'Finance and Accounting',
+  'Human Resources',
   'Infrastructure',
+  'Legal',
+  'Marketing',
+  'Office Management',
+  'Operations',
+  'Productivity',
+  'Recruiting and Talent',
+  'Retail',
+  'Sales',
+  'Security',
+  'Supply Chain and Logistics',
+  'Fintech',
+  'Asset Management',
+  'Banking and Exchange',
+  'Consumer Finance',
+  'Credit and Lending',
+  'Insurance',
+  'Payments',
+  'Consumer',
+  'Apparel and Cosmetics',
+  'Consumer Electronics',
+  'Content',
+  'Food and Beverage',
+  'Gaming',
+  'Home and Personal',
+  'Job and Career Services',
+  'Social',
+  'Transportation Services',
+  'Travel, Leisure and Tourism',
+  'Virtual and Augmented Reality',
   'Healthcare',
-  'DevOps',
   'Education',
   'Industrials',
-  'Sales',
-  'Productivity',
-  'Gaming',
-  'Social',
   'Real Estate and Construction',
+  'Construction',
+  'Housing and Real Estate',
+  'Government',
+  'Unspecified',
 ]
 
   return (
@@ -379,154 +251,73 @@ const INDUSTRIES = [
 
         <div className="px-8 py-8 max-w-7xl mx-auto">
 
-          {/* ── TOP CATEGORIES (DRINK MACHINE STYLE) ── */}
+          {/* ── TOP CATEGORIES ── */}
           <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-white">Top Categories</h2>
-                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Filter by investor backing</p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setCatOffset(Math.max(0, catOffset - 10))}
-                  disabled={catOffset === 0}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-                  style={{
-                    background: catOffset === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
-                    color: catOffset === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                  }}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setCatOffset(Math.min(Math.floor((CATEGORIES.length - 1) / 10) * 10, catOffset + 10))}
-                  disabled={catOffset >= Math.floor((CATEGORIES.length - 1) / 10) * 10}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-                  style={{
-                    background: catOffset >= Math.floor((CATEGORIES.length - 1) / 10) * 10 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
-                    color: catOffset >= Math.floor((CATEGORIES.length - 1) / 10) * 10 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                  }}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-white">Top Categories</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Filter by investor backing</p>
             </div>
 
-            {/* Drink machine bubble layout */}
-            <div 
-              className="relative min-h-[400px] rounded-2xl p-8"
-              style={{
-                background: 'rgba(15, 15, 15, 0.6)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              {/* Bubble background effect */}
-              <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-                {bubbles.map((bubble) => (
-                  <div
-                    key={bubble.id}
-                    className="absolute rounded-full opacity-10"
-                    style={{
-                      width: `${bubble.size}px`,
-                      height: `${bubble.size}px`,
-                      left: `${bubble.left}%`,
-                      top: `${bubble.top}%`,
-                      background: 'rgba(255, 255, 255, 0.3)',
-                      animation: `float ${bubble.duration}s ease-in-out infinite`,
-                      animationDelay: `${bubble.delay}s`,
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Category bubbles - always show 10 */}
-              <div className="relative grid grid-cols-5 gap-6">
-                <AnimatePresence mode="popLayout">
-                  {Array.from({ length: 10 }, (_, i) => {
-                    const cat = visibleCats[i]
-                    if (!cat) {
-                      // Empty placeholder to maintain grid
-                      return (
-                        <div key={`empty-${i}`} className="flex flex-col items-center opacity-0 pointer-events-none">
-                          <div className="rounded-full" style={{ width: '120px', height: '120px' }} />
-                        </div>
-                      )
-                    }
-                    const active = selectedCategories.includes(cat.name)
-                    return (
-                      <motion.div
-                        key={cat.name}
-                        initial={{ opacity: 0, scale: 0.8, x: -20 }}
-                        animate={{ opacity: 1, scale: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, x: 20 }}
-                        transition={{ delay: i * 0.03, duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] }}
-                        className="flex flex-col items-center"
+            {/* Standard grid layout */}
+            <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+              {CATEGORIES.map((cat, i) => {
+                const active = selectedCategories.includes(cat.name)
+                return (
+                  <motion.div
+                    key={cat.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.02, duration: 0.2 }}
+                    className="flex flex-col items-center"
+                  >
+                    <motion.button
+                      onClick={() => {
+                        if (active) {
+                          setSelectedCategories(selectedCategories.filter(c => c !== cat.name))
+                        } else {
+                          setSelectedCategories([...selectedCategories, cat.name])
+                        }
+                      }}
+                      className="relative flex flex-col items-center justify-center rounded-xl overflow-hidden transition-all duration-200 shadow-lg w-full aspect-square"
+                      style={{
+                        background: cat.bg,
+                        border: active ? `2px solid ${cat.accent}` : '1px solid rgba(255,255,255,0.1)',
+                        boxShadow: active 
+                          ? `0 4px 16px ${cat.accent}30` 
+                          : '0 2px 8px rgba(0,0,0,0.2)',
+                      }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {/* Logo/Image with fallback */}
+                      <img
+                        src={cat.imgUrl}
+                        alt={cat.name}
+                        className="w-16 h-16 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                          const fallback = e.currentTarget.nextElementSibling as HTMLElement
+                          if (fallback) fallback.classList.remove('hidden')
+                        }}
+                      />
+                      <span className="hidden text-white font-bold text-xl">{cat.name.slice(0,2).toUpperCase()}</span>
+                    </motion.button>
+                    
+                    {/* Category name below */}
+                    <div className="mt-2 text-center w-full">
+                      <div 
+                        className="text-sm font-semibold"
+                        style={{ 
+                          color: active ? cat.accent : 'rgba(255,255,255,0.8)',
+                          transition: 'color 0.2s',
+                        }}
                       >
-                        <motion.button
-                          onClick={() => {
-                            if (active) {
-                              setSelectedCategories(selectedCategories.filter(c => c !== cat.name))
-                            } else {
-                              setSelectedCategories([...selectedCategories, cat.name])
-                            }
-                          }}
-                          className="relative flex flex-col items-center justify-center rounded-full overflow-hidden transition-all duration-200 shadow-lg"
-                          style={{
-                            background: cat.bg,
-                            border: active ? `3px solid ${cat.accent}` : '3px solid rgba(255,255,255,0.1)',
-                            width: '120px',
-                            height: '120px',
-                            boxShadow: active 
-                              ? `0 8px 32px ${cat.accent}40, 0 0 0 1px ${cat.accent}20` 
-                              : '0 4px 16px rgba(0,0,0,0.3)',
-                          }}
-                          whileHover={{ scale: 1.1, y: -4 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          {/* Shine effect */}
-                          <div 
-                            className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-20 transition-opacity"
-                            style={{
-                              background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 70%)',
-                            }}
-                          />
-                          
-                          {/* Logo/Text */}
-                          <span 
-                            className="relative z-10 text-center"
-                            style={{
-                              color: cat.textColor,
-                              fontFamily: cat.font,
-                              fontWeight: cat.weight,
-                              fontSize: cat.logo.length > 3 ? '0.75rem' : cat.logo.length === 1 ? '2.5rem' : '1.25rem',
-                              letterSpacing: '-0.02em',
-                              lineHeight: '1.2',
-                            }}
-                          >
-                            {cat.logo}
-                          </span>
-                        </motion.button>
-                        
-                        {/* Category name below bubble */}
-                        <div className="mt-3 text-center">
-                          <div 
-                            className="text-xs font-semibold"
-                            style={{ 
-                              color: active ? cat.accent : 'rgba(255,255,255,0.7)',
-                              transition: 'color 0.2s',
-                            }}
-                          >
-                            {cat.name}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-              </div>
+                        {cat.name}
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
             </div>
 
             {/* Active filter pills */}
