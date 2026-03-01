@@ -1,15 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['your-supabase-project.supabase.co'],
+    domains: ['your-supabase-project.supabase.co', 'logo.clearbit.com'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
       },
     ],
   },
